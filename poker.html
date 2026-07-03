@@ -86,6 +86,31 @@
   .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);border:1px solid var(--oro);color:var(--oro);padding:11px 22px;border-radius:30px;font-size:.82rem;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999;font-family:Arial,sans-serif;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   #loading{position:fixed;inset:0;background:rgba(13,27,42,.9);display:none;align-items:center;justify-content:center;z-index:500;font-size:.9rem;color:var(--oro);font-style:italic;}
+
+  /* INICIAR PARTIDA (en espera) */
+  .btn-iniciar-wrap{width:100%;max-width:360px;margin-top:6px;}
+  .espera-mensaje-host{font-size:.72rem;color:var(--gray-dim);text-align:center;font-family:Arial,sans-serif;margin-top:10px;line-height:1.5;}
+
+  /* MINUTO DE GRACIA */
+  .gracia-reloj{font-size:3.4rem;color:var(--oro);font-family:Arial,sans-serif;font-weight:bold;letter-spacing:.03em;margin-bottom:6px;}
+  .gracia-reloj.urgente{color:var(--danger);}
+  .gracia-lbl{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gray);margin-bottom:30px;font-family:Arial,sans-serif;}
+  .gracia-carta{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:26px 22px;box-shadow:0 8px 30px rgba(0,0,0,.35);}
+  .gracia-autor{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--oro);margin-bottom:10px;font-family:Arial,sans-serif;}
+  .gracia-titulo{font-size:1.25rem;color:var(--white);margin-bottom:14px;line-height:1.4;}
+  .gracia-arg{font-size:.92rem;color:var(--gray);line-height:1.7;text-align:justify;}
+  .gracia-nota{font-size:.75rem;color:var(--gray-dim);font-style:italic;text-align:center;margin-top:26px;max-width:320px;line-height:1.6;}
+
+  /* ARENA (placeholder paso 2) */
+  .arena-tema{width:100%;background:var(--surface);border-bottom:1px solid var(--border);padding:16px 20px;text-align:center;}
+  .arena-tema-titulo{font-size:1.05rem;color:var(--white);margin-bottom:4px;}
+  .arena-tema-autor{font-size:.65rem;color:var(--oro);font-family:Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;}
+  .arena-jugadores{flex:1;padding:20px;display:flex;flex-direction:column;gap:10px;align-items:center;}
+  .arena-jug-card{width:100%;max-width:360px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;}
+  .arena-jug-nombre{font-size:.9rem;color:var(--white);}
+  .arena-jug-fichas{display:flex;gap:14px;font-family:Arial,sans-serif;font-size:.75rem;}
+  .arena-jug-fichas span{color:var(--oro);}
+  .arena-pendiente{text-align:center;color:var(--gray-dim);font-style:italic;font-size:.82rem;margin-top:20px;max-width:300px;line-height:1.6;}
 </style>
 </head>
 <body>
@@ -194,7 +219,35 @@
     <div class="espera-nota">Comparte este código con los demás jugadores. La partida comienza cuando la mesa esté completa y todos hayan puesto sus cartas.</div>
     <div class="espera-config" id="espera-config"></div>
     <div class="mesa-lista" id="mesa-lista"></div>
+    <div class="btn-iniciar-wrap" id="btn-iniciar-wrap" style="display:none;">
+      <button class="btn-primary" id="btn-iniciar-partida" onclick="iniciarPartida()">INICIAR PARTIDA</button>
+      <div class="espera-mensaje-host">Solo el anfitrión puede iniciar, y solo cuando la mesa esté completa y todos hayan puesto sus cartas.</div>
+    </div>
   </div>
+</div>
+
+<!-- MINUTO DE GRACIA -->
+<div id="screen-gracia" class="screen felt">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;">
+    <div class="gracia-reloj" id="gracia-reloj">60</div>
+    <div class="gracia-lbl" id="gracia-etiqueta">El tema fue elegido al azar — memorízalo</div>
+    <div class="gracia-carta">
+      <div class="gracia-autor" id="gracia-autor">Carta de —</div>
+      <div class="gracia-titulo" id="gracia-titulo">—</div>
+      <div class="gracia-arg" id="gracia-arg">—</div>
+    </div>
+    <div class="gracia-nota">Nadie puede escribir todavía. Cuando el reloj llegue a cero, el orden de turnos se decide al azar.</div>
+  </div>
+</div>
+
+<!-- ARENA (placeholder, la lógica de turnos llega en el Paso 3) -->
+<div id="screen-arena" class="screen felt">
+  <div class="arena-tema">
+    <div class="arena-tema-titulo" id="arena-tema-titulo">—</div>
+    <div class="arena-tema-autor" id="arena-tema-autor">Carta de —</div>
+  </div>
+  <div class="arena-jugadores" id="arena-jugadores"></div>
+  <div class="arena-pendiente">La mesa ya tiene sus fichas repartidas. El sorteo de turnos y el envío de mensajes se activan en el siguiente paso de construcción.</div>
 </div>
 
 <div id="loading">Preparando la mesa...</div>
@@ -202,7 +255,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, set, get, update, onValue, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   // Mismo proyecto de Firebase que Café Abierto, rama separada: salas_poker/
   const firebaseConfig = {
@@ -221,6 +274,9 @@
   window.estado = { salaId:null, uid:null, nombre:null, jugadoresMax:3, cartasPorJugador:1, limiteCarta:400 };
   let cartaActual = 0;
   let cartas = [];
+  let salaActual = null;
+  let graciaTimer = null;
+  let pantallaJuegoMostrada = null; // evita re-navegar en cada actualización
 
   window.irA = function(id){
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -365,6 +421,7 @@
     onValue(ref(db,'salas_poker/'+window.estado.salaId), snap=>{
       if(!snap.exists()) return;
       const sala = snap.val();
+      salaActual = sala;
       document.getElementById('espera-config').textContent =
         sala.jugadoresMax+' jugadores · '+sala.cartasPorJugador+' carta(s) c/u · '+sala.minCarta+'–'+sala.limiteCarta+' caracteres';
       const jugadores = sala.jugadores||{};
@@ -379,7 +436,108 @@
           +'<div class="jugador-listo '+(j.listo?'si':'')+'">'+(j.listo?'Listo':'Escribiendo...')+'</div>'
           +'</div>';
       }).join('');
+
+      // ¿Mostrar botón de iniciar? Solo al anfitrión, mesa completa, todos listos, aún no iniciada.
+      const soyHost = window.estado.uid === sala.host;
+      const total = Object.keys(jugadores).length;
+      const todosListos = total>0 && Object.values(jugadores).every(j=>j.listo);
+      const mesaCompleta = total >= sala.jugadoresMax;
+      const wrap = document.getElementById('btn-iniciar-wrap');
+      if(soyHost && mesaCompleta && todosListos && sala.estado==='esperando'){
+        wrap.style.display='block';
+        document.getElementById('btn-iniciar-partida').disabled=false;
+      } else {
+        wrap.style.display = soyHost ? 'block' : 'none';
+        document.getElementById('btn-iniciar-partida').disabled = true;
+        document.getElementById('btn-iniciar-partida').textContent = !mesaCompleta
+          ? 'Esperando jugadores ('+total+'/'+sala.jugadoresMax+')'
+          : (!todosListos ? 'Esperando cartas de todos' : 'INICIAR PARTIDA');
+      }
+      if(mesaCompleta && todosListos && sala.estado==='esperando'){
+        document.getElementById('btn-iniciar-partida').textContent='INICIAR PARTIDA';
+      }
+
+      // Ruteo automático según el estado real de la sala
+      if(sala.estado==='gracia' && pantallaJuegoMostrada!=='gracia'){
+        pantallaJuegoMostrada='gracia';
+        mostrarGracia(sala);
+      } else if(sala.estado==='arena' && pantallaJuegoMostrada!=='arena'){
+        pantallaJuegoMostrada='arena';
+        mostrarArena(sala);
+      }
     });
+  }
+
+  // ── INICIAR PARTIDA (fusiona el mazo y sortea la carta, protegido por transacción) ──
+  window.iniciarPartida = async function(){
+    if(!salaActual) return;
+    const codigo = window.estado.salaId;
+    mostrarLoading(true);
+    const jugadores = salaActual.jugadores||{};
+    const mazo = [];
+    Object.entries(jugadores).forEach(([uid,j])=>{
+      (j.cartas||[]).forEach(c=> mazo.push({titulo:c.titulo, argumento:c.argumento, autorUid:uid, autorNombre:j.nombre}));
+    });
+    if(mazo.length===0){ mostrarLoading(false); showToast('No hay cartas en la mesa todavía'); return; }
+    const cartaElegida = mazo[Math.floor(Math.random()*mazo.length)];
+    const fichas = {};
+    Object.keys(jugadores).forEach(uid=>{ fichas[uid] = { intervencion:10, salto:3 }; });
+
+    // runTransaction: solo el primer dispositivo que llegue aquí "gana" el sorteo.
+    // Si dos anfitriones (o reintentos) llaman a esto casi a la vez, Firebase descarta el segundo intento.
+    await runTransaction(ref(db,'salas_poker/'+codigo+'/partida'), actual=>{
+      if(actual !== null) return; // ya existe una partida iniciada: no la pisamos
+      return { cartaElegida, fichas, graciaIniciadaEn: Date.now(), graciaDuracion:60 };
+    });
+    await update(ref(db,'salas_poker/'+codigo), { estado:'gracia' });
+    mostrarLoading(false);
+  };
+
+  // ── MINUTO DE GRACIA ──
+  function mostrarGracia(sala){
+    const p = sala.partida;
+    if(!p){ return; }
+    document.getElementById('gracia-autor').textContent = 'Carta de '+p.cartaElegida.autorNombre;
+    document.getElementById('gracia-titulo').textContent = p.cartaElegida.titulo;
+    document.getElementById('gracia-arg').textContent = p.cartaElegida.argumento;
+    irA('screen-gracia');
+
+    if(graciaTimer) clearInterval(graciaTimer);
+    function tick(){
+      const transcurrido = Math.floor((Date.now() - p.graciaIniciadaEn)/1000);
+      const restante = Math.max(0, p.graciaDuracion - transcurrido);
+      const reloj = document.getElementById('gracia-reloj');
+      reloj.textContent = restante;
+      reloj.className = 'gracia-reloj'+(restante<=10?' urgente':'');
+      if(restante<=0){
+        clearInterval(graciaTimer);
+        // Cualquier cliente puede marcar el paso a 'arena'; si varios lo intentan a la vez, la última escritura es inofensiva (mismo valor).
+        if(window.estado.uid===sala.host){
+          update(ref(db,'salas_poker/'+window.estado.salaId), { estado:'arena' }).catch(()=>{});
+        }
+      }
+    }
+    tick();
+    graciaTimer = setInterval(tick, 1000);
+  }
+
+  // ── ARENA (placeholder del Paso 2: fichas repartidas, sin turnos aún) ──
+  function mostrarArena(sala){
+    if(graciaTimer){ clearInterval(graciaTimer); graciaTimer=null; }
+    const p = sala.partida;
+    if(!p) return;
+    document.getElementById('arena-tema-titulo').textContent = p.cartaElegida.titulo;
+    document.getElementById('arena-tema-autor').textContent = 'Carta de '+p.cartaElegida.autorNombre;
+    const jugadores = sala.jugadores||{};
+    const fichas = p.fichas||{};
+    const cont = document.getElementById('arena-jugadores');
+    cont.innerHTML = Object.entries(jugadores).map(([uid,j])=>{
+      const f = fichas[uid]||{intervencion:0,salto:0};
+      const esYo = uid===window.estado.uid;
+      return '<div class="arena-jug-card"><div class="arena-jug-nombre">'+j.nombre+(esYo?' (tú)':'')+'</div>'
+        +'<div class="arena-jug-fichas"><span>'+f.intervencion+'</span> intervención &nbsp; <span>'+f.salto+'</span> salto</div></div>';
+    }).join('');
+    irA('screen-arena');
   }
 
   // ── RECUPERAR SESIÓN ──
@@ -395,8 +553,8 @@
         window.estado.jugadoresMax=sala.jugadoresMax; window.estado.cartasPorJugador=sala.cartasPorJugador; window.estado.limiteCarta=sala.limiteCarta;
         onDisconnect(ref(db,'salas_poker/'+salaId+'/jugadores/'+uid+'/conectado')).set(false);
         update(ref(db,'salas_poker/'+salaId+'/jugadores/'+uid+'/conectado'), true).catch(()=>{});
-        if(sala.jugadores[uid].listo){ irA('screen-espera'); cargarEspera(); }
-        else { iniciarWizardCartas(); }
+        if(!sala.jugadores[uid].listo){ iniciarWizardCartas(); }
+        else { irA('screen-espera'); cargarEspera(); }
       } else { localStorage.removeItem('pc_sesion'); }
     }catch(e){ localStorage.removeItem('pc_sesion'); }
   })();
