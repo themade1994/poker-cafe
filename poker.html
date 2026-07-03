@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Póker Café</title>
+<style>
+  :root{
+    --bg:#0d1b2a; --surface:#162032; --surface2:#1e2d40;
+    --border:#2a3f58; --oro:#d4af37; --oro-dim:#a3841f; --oro-soft:#e8c766;
+    --white:#ffffff; --gray:#8aa0b8; --gray-dim:#4a6070; --danger:#e05c5c;
+    --felt:#0f2a20;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{min-height:100vh;background:var(--bg);color:var(--white);font-family:'Georgia',serif;-webkit-font-smoothing:antialiased;}
+  .screen{display:none;min-height:100vh;flex-direction:column;}
+  .screen.active{display:flex;}
+  .felt{background:radial-gradient(ellipse at top,#12352a 0%,var(--felt) 55%,var(--bg) 100%);}
+
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;}
+  .header-back{background:none;border:none;color:var(--oro);font-size:1.4rem;cursor:pointer;padding:0 8px 0 0;}
+  .header-title{font-size:.92rem;flex:1;color:var(--white);letter-spacing:.02em;}
+  .header-tag{font-size:.65rem;color:var(--oro);font-family:Arial,sans-serif;letter-spacing:.1em;}
+
+  .btn-primary{background:var(--oro);color:#1a1400;border:none;padding:15px 28px;font-size:.85rem;letter-spacing:.08em;cursor:pointer;border-radius:8px;font-family:'Georgia',serif;font-weight:bold;width:100%;max-width:340px;transition:background .2s;}
+  .btn-primary:hover{background:var(--oro-soft);}
+  .btn-primary:disabled{background:var(--gray-dim);color:var(--gray);cursor:not-allowed;opacity:.6;}
+  .btn-secondary{background:none;border:2px solid var(--oro);color:var(--oro);padding:13px 28px;font-size:.85rem;letter-spacing:.08em;cursor:pointer;border-radius:8px;font-family:'Georgia',serif;width:100%;max-width:340px;}
+  .btn-ghost{background:none;border:1px solid var(--border);color:var(--gray);padding:12px 24px;font-size:.8rem;cursor:pointer;border-radius:8px;font-family:'Georgia',serif;width:100%;max-width:340px;}
+
+  .hub-suit{font-size:2.6rem;color:var(--oro);margin-bottom:6px;letter-spacing:.2em;}
+  .hub-titulo{font-size:2rem;color:var(--white);margin-bottom:4px;letter-spacing:.02em;}
+  .hub-titulo span{color:var(--oro);}
+  .hub-sub{font-size:.85rem;color:var(--gray);font-style:italic;margin-bottom:44px;max-width:300px;line-height:1.6;}
+
+  .form-body{flex:1;padding:24px 20px;overflow-y:auto;}
+  .form-group{margin-bottom:22px;}
+  .form-label{display:block;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--oro);margin-bottom:9px;font-family:Arial,sans-serif;}
+  .form-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--white);font-family:'Georgia',serif;font-size:.95rem;outline:none;}
+  .form-input:focus{border-color:var(--oro);}
+  .form-input::placeholder{color:var(--gray-dim);font-style:italic;}
+  .chip-select{display:flex;gap:8px;}
+  .chip-opt{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 8px;text-align:center;cursor:pointer;font-family:Arial,sans-serif;font-size:.85rem;color:var(--gray);}
+  .chip-opt.sel{border-color:var(--oro);color:var(--oro);background:rgba(212,175,55,.08);font-weight:bold;}
+  .form-footer{padding:16px 20px 36px;display:flex;flex-direction:column;gap:10px;align-items:center;}
+
+  /* CARTA (wizard) */
+  .carta-wrap{flex:1;display:flex;flex-direction:column;align-items:center;padding:22px 18px;}
+  .carta-panel{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 20px 18px;position:relative;box-shadow:0 8px 30px rgba(0,0,0,.35);}
+  .carta-corner{position:absolute;top:14px;left:16px;font-family:Arial,sans-serif;font-size:.72rem;color:var(--oro);letter-spacing:.05em;}
+  .carta-suit{position:absolute;top:12px;right:18px;font-size:1.3rem;color:var(--oro-dim);opacity:.8;}
+  .carta-titulo-lbl{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--oro);margin:26px 0 8px;font-family:Arial,sans-serif;}
+  .carta-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--white);font-family:'Georgia',serif;font-size:.98rem;outline:none;margin-bottom:16px;}
+  .carta-input:focus{border-color:var(--oro);}
+  .carta-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--white);font-family:'Georgia',serif;font-size:.9rem;line-height:1.65;outline:none;resize:vertical;min-height:120px;text-align:justify;}
+  .carta-textarea:focus{border-color:var(--oro);}
+  .carta-counter{text-align:right;font-size:.68rem;color:var(--gray-dim);margin-top:6px;font-family:Arial,sans-serif;}
+  .carta-counter.ok{color:#4caf7d;}
+  .carta-counter.warn{color:#f0a500;}
+  .carta-counter.over{color:var(--danger);}
+  .carta-progreso{display:flex;gap:6px;margin:18px 0 4px;}
+  .carta-dot{flex:1;height:4px;border-radius:2px;background:var(--border);}
+  .carta-dot.done{background:var(--oro);}
+  .carta-dot.actual{background:var(--oro-soft);}
+  .carta-nav{width:100%;max-width:400px;display:flex;gap:10px;margin-top:20px;}
+  .carta-nav .btn-primary,.carta-nav .btn-ghost{max-width:none;}
+
+  /* CODIGO / ESPERA */
+  .codigo-box{background:var(--surface2);border:2px solid var(--oro);padding:22px 28px;border-radius:10px;margin-bottom:22px;width:100%;max-width:340px;text-align:center;}
+  .codigo-label{font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray);margin-bottom:8px;font-family:Arial,sans-serif;}
+  .codigo-value{font-size:2rem;letter-spacing:.25em;font-weight:bold;color:var(--oro);font-family:Arial,sans-serif;}
+  .codigo-input{font-size:1.8rem;letter-spacing:.3em;text-align:center;background:var(--surface2);border:2px solid var(--border);border-radius:8px;color:var(--oro);width:100%;max-width:300px;padding:14px;font-family:Arial,sans-serif;outline:none;text-transform:uppercase;margin-bottom:16px;}
+  .codigo-input:focus{border-color:var(--oro);}
+
+  .mesa-lista{width:100%;max-width:360px;margin-bottom:20px;}
+  .jugador-row{display:flex;align-items:center;gap:12px;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;}
+  .jugador-punto{width:9px;height:9px;border-radius:50%;background:var(--gray-dim);flex-shrink:0;}
+  .jugador-punto.on{background:#4caf7d;}
+  .jugador-nombre{flex:1;font-size:.92rem;color:var(--white);}
+  .jugador-tag{font-size:.65rem;color:var(--oro);font-family:Arial,sans-serif;letter-spacing:.05em;}
+  .jugador-listo{font-size:.65rem;color:var(--gray-dim);font-family:Arial,sans-serif;}
+  .jugador-listo.si{color:#4caf7d;}
+  .espera-nota{font-size:.8rem;color:var(--gray);font-style:italic;text-align:center;margin-bottom:6px;max-width:320px;line-height:1.6;}
+  .espera-config{font-size:.68rem;color:var(--gray-dim);font-family:Arial,sans-serif;text-align:center;margin-bottom:24px;}
+
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);border:1px solid var(--oro);color:var(--oro);padding:11px 22px;border-radius:30px;font-size:.82rem;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999;font-family:Arial,sans-serif;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  #loading{position:fixed;inset:0;background:rgba(13,27,42,.9);display:none;align-items:center;justify-content:center;z-index:500;font-size:.9rem;color:var(--oro);font-style:italic;}
+</style>
+</head>
+<body>
+
+<!-- HUB -->
+<div id="screen-hub" class="screen active felt">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px 24px;text-align:center;">
+    <div class="hub-suit">♠ ♥ ♦ ♣</div>
+    <div class="hub-titulo">Póker <span>Café</span></div>
+    <div class="hub-sub">Una mesa, un mazo de temas, y solo quien mejor argumenta bajo presión se queda con la partida.</div>
+    <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:340px;">
+      <button class="btn-primary" onclick="irA('screen-crear')">CREAR UNA SALA</button>
+      <button class="btn-secondary" onclick="irA('screen-unirse')">UNIRME CON CÓDIGO</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREAR SALA -->
+<div id="screen-crear" class="screen">
+  <div class="header">
+    <button class="header-back" onclick="irA('screen-hub')">←</button>
+    <div class="header-title">Crear sala</div>
+  </div>
+  <div class="form-body">
+    <div class="form-group">
+      <label class="form-label">Tu seudónimo</label>
+      <input class="form-input" id="crear-nombre" placeholder="¿Cómo te verán en la mesa?" maxlength="24"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Jugadores en la mesa</label>
+      <div class="chip-select" id="sel-jugadores">
+        <div class="chip-opt" data-v="3" onclick="seleccionar('sel-jugadores',this,'jugadoresMax')">3</div>
+        <div class="chip-opt" data-v="4" onclick="seleccionar('sel-jugadores',this,'jugadoresMax')">4</div>
+        <div class="chip-opt" data-v="5" onclick="seleccionar('sel-jugadores',this,'jugadoresMax')">5</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Cartas (temas) por jugador</label>
+      <div class="chip-select" id="sel-cartas">
+        <div class="chip-opt" data-v="1" onclick="seleccionar('sel-cartas',this,'cartasPorJugador')">1</div>
+        <div class="chip-opt" data-v="2" onclick="seleccionar('sel-cartas',this,'cartasPorJugador')">2</div>
+        <div class="chip-opt" data-v="3" onclick="seleccionar('sel-cartas',this,'cartasPorJugador')">3</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Caracteres por carta (título + argumento)</label>
+      <div class="chip-select" id="sel-limite">
+        <div class="chip-opt" data-v="250" onclick="seleccionar('sel-limite',this,'limiteCarta')">80–250</div>
+        <div class="chip-opt" data-v="400" onclick="seleccionar('sel-limite',this,'limiteCarta')">80–400</div>
+        <div class="chip-opt" data-v="600" onclick="seleccionar('sel-limite',this,'limiteCarta')">80–600</div>
+      </div>
+    </div>
+  </div>
+  <div class="form-footer">
+    <button class="btn-primary" onclick="crearSala()">CREAR SALA</button>
+  </div>
+</div>
+
+<!-- UNIRSE -->
+<div id="screen-unirse" class="screen">
+  <div class="header">
+    <button class="header-back" onclick="irA('screen-hub')">←</button>
+    <div class="header-title">Unirme a una sala</div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:36px 24px;">
+    <input class="codigo-input" id="unirse-codigo" maxlength="6" placeholder="XXXXXX" oninput="this.value=this.value.toUpperCase()"/>
+    <input class="form-input" id="unirse-nombre" placeholder="Tu seudónimo" maxlength="24" style="max-width:300px;margin-bottom:20px;"/>
+    <button class="btn-primary" onclick="unirseSala()">ENTRAR A LA MESA</button>
+  </div>
+</div>
+
+<!-- WIZARD DE CARTAS -->
+<div id="screen-cartas" class="screen felt">
+  <div class="header" style="background:transparent;border-bottom:1px solid rgba(255,255,255,.06);">
+    <div class="header-title" id="cartas-header-title">Tu carta 1</div>
+    <div class="header-tag" id="cartas-header-tag"></div>
+  </div>
+  <div class="carta-wrap">
+    <div class="carta-progreso" id="carta-progreso" style="max-width:400px;"></div>
+    <div class="carta-panel">
+      <div class="carta-corner" id="carta-corner">1/1</div>
+      <div class="carta-suit" id="carta-suit">♠</div>
+      <div class="carta-titulo-lbl">Título o pregunta</div>
+      <input class="carta-input" id="carta-titulo" placeholder="¿Sobre qué quieres debatir?" maxlength="120" oninput="actualizarContadorCarta()"/>
+      <div class="carta-titulo-lbl">Argumento o contexto</div>
+      <textarea class="carta-textarea" id="carta-argumento" placeholder="Desarrolla brevemente el punto de partida..." oninput="actualizarContadorCarta()"></textarea>
+      <div class="carta-counter" id="carta-counter">0 / 0</div>
+    </div>
+    <div class="carta-nav">
+      <button class="btn-ghost" id="carta-btn-atras" onclick="cartaAtras()">Atrás</button>
+      <button class="btn-primary" id="carta-btn-siguiente" onclick="cartaSiguiente()" disabled>Siguiente</button>
+    </div>
+  </div>
+</div>
+
+<!-- SALA DE ESPERA -->
+<div id="screen-espera" class="screen felt">
+  <div class="header" style="background:transparent;border-bottom:1px solid rgba(255,255,255,.06);">
+    <div class="header-title">Sala de espera</div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:32px 20px;">
+    <div class="codigo-box">
+      <div class="codigo-label">Código de la sala</div>
+      <div class="codigo-value" id="espera-codigo">------</div>
+    </div>
+    <div class="espera-nota">Comparte este código con los demás jugadores. La partida comienza cuando la mesa esté completa y todos hayan puesto sus cartas.</div>
+    <div class="espera-config" id="espera-config"></div>
+    <div class="mesa-lista" id="mesa-lista"></div>
+  </div>
+</div>
+
+<div id="loading">Preparando la mesa...</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, get, update, onValue, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  // Mismo proyecto de Firebase que Café Abierto, rama separada: salas_poker/
+  const firebaseConfig = {
+    apiKey:"AIzaSyDtR_-GKB-xULYY4pNofWKdEVjR9ve0yyk",
+    authDomain:"cafe-abierto.firebaseapp.com",
+    databaseURL:"https://cafe-abierto-default-rtdb.firebaseio.com",
+    projectId:"cafe-abierto",
+    storageBucket:"cafe-abierto.firebasestorage.app",
+    messagingSenderId:"522167725222",
+    appId:"1:522167725222:web:0fd5a5288ad29773b55867"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const SUITS = ['♠','♥','♦','♣'];
+
+  window.estado = { salaId:null, uid:null, nombre:null, jugadoresMax:3, cartasPorJugador:1, limiteCarta:400 };
+  let cartaActual = 0;
+  let cartas = [];
+
+  window.irA = function(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  };
+  window.showToast = function(msg){
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),2600);
+  };
+  window.mostrarLoading = v => document.getElementById('loading').style.display = v?'flex':'none';
+
+  window.seleccionar = function(grupoId, el, campo){
+    document.querySelectorAll('#'+grupoId+' .chip-opt').forEach(o=>o.classList.remove('sel'));
+    el.classList.add('sel');
+    window.estado[campo] = parseInt(el.dataset.v);
+  };
+  // valores por defecto preseleccionados
+  document.getElementById('sel-jugadores').children[0].classList.add('sel');
+  document.getElementById('sel-cartas').children[0].classList.add('sel');
+  document.getElementById('sel-limite').children[1].classList.add('sel');
+
+  function generarCodigo(){
+    const ab='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let c=''; for(let i=0;i<6;i++) c+=ab[Math.floor(Math.random()*ab.length)];
+    return c;
+  }
+  function generarUid(){ return 'u'+Date.now()+Math.random().toString(36).slice(2,8); }
+
+  // ── CREAR SALA ──
+  window.crearSala = async function(){
+    const nombre = document.getElementById('crear-nombre').value.trim();
+    if(!nombre){ showToast('Escribe tu seudónimo'); return; }
+    mostrarLoading(true);
+    const codigo = generarCodigo();
+    const uid = generarUid();
+    const salaData = {
+      host: uid,
+      jugadoresMax: window.estado.jugadoresMax,
+      cartasPorJugador: window.estado.cartasPorJugador,
+      limiteCarta: window.estado.limiteCarta,
+      minCarta: 80,
+      estado: 'esperando',
+      creadoEn: Date.now(),
+      jugadores: { [uid]: { nombre, listo:false, conectado:true, cartas:[] } }
+    };
+    await set(ref(db,'salas_poker/'+codigo), salaData);
+    window.estado.salaId = codigo; window.estado.uid = uid; window.estado.nombre = nombre;
+    localStorage.setItem('pc_sesion', JSON.stringify({salaId:codigo, uid, nombre}));
+    onDisconnect(ref(db,'salas_poker/'+codigo+'/jugadores/'+uid+'/conectado')).set(false);
+    mostrarLoading(false);
+    iniciarWizardCartas();
+  };
+
+  // ── UNIRSE ──
+  window.unirseSala = async function(){
+    const codigo = document.getElementById('unirse-codigo').value.trim().toUpperCase();
+    const nombre = document.getElementById('unirse-nombre').value.trim();
+    if(codigo.length!==6){ showToast('Ingresa un código de 6 caracteres'); return; }
+    if(!nombre){ showToast('Escribe tu seudónimo'); return; }
+    mostrarLoading(true);
+    const snap = await get(ref(db,'salas_poker/'+codigo));
+    if(!snap.exists()){ mostrarLoading(false); showToast('No se encontró esa sala'); return; }
+    const sala = snap.val();
+    if(sala.estado!=='esperando'){ mostrarLoading(false); showToast('Esa mesa ya está en juego'); return; }
+    const jugadoresActuales = Object.keys(sala.jugadores||{}).length;
+    if(jugadoresActuales >= sala.jugadoresMax){ mostrarLoading(false); showToast('La mesa ya está completa'); return; }
+    const uid = generarUid();
+    await update(ref(db,'salas_poker/'+codigo+'/jugadores/'+uid), { nombre, listo:false, conectado:true, cartas:[] });
+    window.estado.salaId = codigo; window.estado.uid = uid; window.estado.nombre = nombre;
+    window.estado.jugadoresMax = sala.jugadoresMax; window.estado.cartasPorJugador = sala.cartasPorJugador; window.estado.limiteCarta = sala.limiteCarta;
+    localStorage.setItem('pc_sesion', JSON.stringify({salaId:codigo, uid, nombre}));
+    onDisconnect(ref(db,'salas_poker/'+codigo+'/jugadores/'+uid+'/conectado')).set(false);
+    mostrarLoading(false);
+    iniciarWizardCartas();
+  };
+
+  // ── WIZARD DE CARTAS ──
+  function iniciarWizardCartas(){
+    cartaActual = 0;
+    cartas = Array.from({length:window.estado.cartasPorJugador}, ()=>({titulo:'', argumento:''}));
+    renderCarta();
+    irA('screen-cartas');
+  }
+
+  function renderCarta(){
+    const total = window.estado.cartasPorJugador;
+    document.getElementById('cartas-header-title').textContent = 'Tu carta '+(cartaActual+1)+' de '+total;
+    document.getElementById('cartas-header-tag').textContent = window.estado.nombre;
+    document.getElementById('carta-corner').textContent = (cartaActual+1)+'/'+total;
+    document.getElementById('carta-suit').textContent = SUITS[cartaActual % SUITS.length];
+    document.getElementById('carta-titulo').value = cartas[cartaActual].titulo;
+    document.getElementById('carta-argumento').value = cartas[cartaActual].argumento;
+    document.getElementById('carta-btn-atras').style.visibility = cartaActual===0 ? 'hidden' : 'visible';
+    document.getElementById('carta-btn-siguiente').textContent = (cartaActual===total-1) ? 'Sentarme a la mesa' : 'Siguiente';
+    const prog = document.getElementById('carta-progreso');
+    prog.innerHTML = Array.from({length:total},(_,i)=>
+      '<div class="carta-dot '+(i<cartaActual?'done':(i===cartaActual?'actual':''))+'"></div>'
+    ).join('');
+    actualizarContadorCarta();
+  }
+
+  window.actualizarContadorCarta = function(){
+    const titulo = document.getElementById('carta-titulo').value;
+    const arg = document.getElementById('carta-argumento').value;
+    const n = titulo.length + arg.length;
+    const min = 80, max = window.estado.limiteCarta;
+    const cnt = document.getElementById('carta-counter');
+    cnt.textContent = n+' / '+max+' (mínimo '+min+')';
+    cnt.className = 'carta-counter';
+    const btn = document.getElementById('carta-btn-siguiente');
+    if(n < min){ cnt.classList.add('warn'); btn.disabled = true; }
+    else if(n > max){ cnt.classList.add('over'); btn.disabled = true; }
+    else { cnt.classList.add('ok'); btn.disabled = !(titulo.trim() && arg.trim()); }
+  };
+
+  window.cartaAtras = function(){
+    if(cartaActual===0) return;
+    cartas[cartaActual] = { titulo: document.getElementById('carta-titulo').value, argumento: document.getElementById('carta-argumento').value };
+    cartaActual--;
+    renderCarta();
+  };
+
+  window.cartaSiguiente = async function(){
+    cartas[cartaActual] = { titulo: document.getElementById('carta-titulo').value.trim(), argumento: document.getElementById('carta-argumento').value.trim() };
+    if(cartaActual < window.estado.cartasPorJugador - 1){
+      cartaActual++;
+      renderCarta();
+    } else {
+      mostrarLoading(true);
+      await update(ref(db,'salas_poker/'+window.estado.salaId+'/jugadores/'+window.estado.uid), { cartas, listo:true });
+      mostrarLoading(false);
+      irA('screen-espera');
+      cargarEspera();
+    }
+  };
+
+  // ── SALA DE ESPERA ──
+  function cargarEspera(){
+    document.getElementById('espera-codigo').textContent = window.estado.salaId;
+    onValue(ref(db,'salas_poker/'+window.estado.salaId), snap=>{
+      if(!snap.exists()) return;
+      const sala = snap.val();
+      document.getElementById('espera-config').textContent =
+        sala.jugadoresMax+' jugadores · '+sala.cartasPorJugador+' carta(s) c/u · '+sala.minCarta+'–'+sala.limiteCarta+' caracteres';
+      const jugadores = sala.jugadores||{};
+      const lista = document.getElementById('mesa-lista');
+      lista.innerHTML = Object.entries(jugadores).map(([uid,j])=>{
+        const esHost = uid===sala.host;
+        const esYo = uid===window.estado.uid;
+        return '<div class="jugador-row">'
+          +'<div class="jugador-punto '+(j.conectado?'on':'')+'"></div>'
+          +'<div class="jugador-nombre">'+j.nombre+(esYo?' (tú)':'')+'</div>'
+          +(esHost?'<div class="jugador-tag">ANFITRIÓN</div>':'')
+          +'<div class="jugador-listo '+(j.listo?'si':'')+'">'+(j.listo?'Listo':'Escribiendo...')+'</div>'
+          +'</div>';
+      }).join('');
+    });
+  }
+
+  // ── RECUPERAR SESIÓN ──
+  (async function(){
+    const s = localStorage.getItem('pc_sesion'); if(!s) return;
+    try{
+      const {salaId, uid, nombre} = JSON.parse(s);
+      const snap = await get(ref(db,'salas_poker/'+salaId));
+      if(!snap.exists() || !snap.val().jugadores || !snap.val().jugadores[uid]) { localStorage.removeItem('pc_sesion'); return; }
+      const sala = snap.val();
+      if(confirm('Tienes una mesa de Póker Café activa. ¿Volver a la sala de espera?')){
+        window.estado.salaId=salaId; window.estado.uid=uid; window.estado.nombre=nombre;
+        window.estado.jugadoresMax=sala.jugadoresMax; window.estado.cartasPorJugador=sala.cartasPorJugador; window.estado.limiteCarta=sala.limiteCarta;
+        onDisconnect(ref(db,'salas_poker/'+salaId+'/jugadores/'+uid+'/conectado')).set(false);
+        update(ref(db,'salas_poker/'+salaId+'/jugadores/'+uid+'/conectado'), true).catch(()=>{});
+        if(sala.jugadores[uid].listo){ irA('screen-espera'); cargarEspera(); }
+        else { iniciarWizardCartas(); }
+      } else { localStorage.removeItem('pc_sesion'); }
+    }catch(e){ localStorage.removeItem('pc_sesion'); }
+  })();
+</script>
+</body>
+</html>
