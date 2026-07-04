@@ -170,6 +170,11 @@
       <button class="btn-primary" onclick="irA('screen-crear')">CREAR UNA SALA</button>
       <button class="btn-secondary" onclick="irA('screen-unirse')">UNIRME CON CÓDIGO</button>
     </div>
+    <div id="sesion-activa" style="display:none;margin-top:24px;width:100%;max-width:340px;">
+      <div style="font-size:.78rem;color:var(--gray);text-align:center;margin-bottom:10px;">Tienes una mesa abierta (código <span id="sesion-codigo" style="color:var(--oro);font-weight:bold;"></span>)</div>
+      <button class="btn-primary" onclick="volverAMiMesa()" style="max-width:none;">VOLVER A MI MESA</button>
+      <button class="btn-ghost" onclick="salirDeMiMesa()" style="max-width:none;margin-top:8px;">SALIR Y LIBERAR MI LUGAR</button>
+    </div>
   </div>
 </div>
 
@@ -870,24 +875,48 @@
     localStorage.setItem(key, document.getElementById('notas-textarea').value);
   };
 
-  // ── RECUPERAR SESIÓN ──
-  (async function(){
+  // ── SESIÓN GUARDADA: sin confirm() nativo (poco confiable entre navegadores) ──
+  // En vez de interrumpir con un cuadro del sistema, mostramos botones reales en el Hub.
+  async function revisarSesionGuardada(){
     const s = localStorage.getItem('pc_sesion'); if(!s) return;
     try{
       const {salaId, uid, nombre} = JSON.parse(s);
       const snap = await get(ref(db,'salas_poker/'+salaId));
-      if(!snap.exists() || !snap.val().jugadores || !snap.val().jugadores[uid]) { localStorage.removeItem('pc_sesion'); return; }
-      const sala = snap.val();
-      if(confirm('Tienes una mesa de Póker Café activa. ¿Volver a la sala de espera?')){
-        window.estado.salaId=salaId; window.estado.uid=uid; window.estado.nombre=nombre;
-        window.estado.jugadoresMax=sala.jugadoresMax; window.estado.cartasPorJugador=sala.cartasPorJugador; window.estado.limiteCarta=sala.limiteCarta;
-        onDisconnect(ref(db,'salas_poker/'+salaId+'/jugadores/'+uid+'/conectado')).set(false);
-        update(ref(db,'salas_poker/'+salaId+'/jugadores/'+uid+'/conectado'), true).catch(()=>{});
-        if(!sala.jugadores[uid].listo){ iniciarWizardCartas(); }
-        else { irA('screen-espera'); cargarEspera(); }
-      } else { localStorage.removeItem('pc_sesion'); }
+      if(!snap.exists() || !snap.val().jugadores || !snap.val().jugadores[uid]){ localStorage.removeItem('pc_sesion'); return; }
+      window._sesionGuardada = { salaId, uid, nombre, sala: snap.val() };
+      document.getElementById('sesion-codigo').textContent = salaId;
+      document.getElementById('sesion-activa').style.display='block';
     }catch(e){ localStorage.removeItem('pc_sesion'); }
-  })();
+  }
+
+  window.volverAMiMesa = function(){
+    const d = window._sesionGuardada; if(!d){ showToast('No se pudo recuperar esa mesa'); return; }
+    const {salaId, uid, nombre, sala} = d;
+    window.estado.salaId=salaId; window.estado.uid=uid; window.estado.nombre=nombre;
+    window.estado.jugadoresMax=sala.jugadoresMax; window.estado.cartasPorJugador=sala.cartasPorJugador; window.estado.limiteCarta=sala.limiteCarta;
+    window.estado.fichaConfig=sala.fichaConfig; window.estado.nivelIntervencion=sala.nivelIntervencion;
+    onDisconnect(ref(db,'salas_poker/'+salaId+'/jugadores/'+uid+'/conectado')).set(false);
+    update(ref(db,'salas_poker/'+salaId+'/jugadores/'+uid+'/conectado'), true).catch(()=>{});
+    try{
+      if(!sala.jugadores[uid].listo){ iniciarWizardCartas(); }
+      else { irA('screen-espera'); cargarEspera(); }
+    }catch(e){ showToast('Ocurrió un problema al volver — intenta de nuevo'); }
+  };
+
+  window.salirDeMiMesa = async function(){
+    const d = window._sesionGuardada; if(!d) return;
+    mostrarLoading(true);
+    try{
+      // Esto borra tu lugar de verdad en Firebase, para que el cupo quede libre y puedas volver a unirte si quieres.
+      await set(ref(db,'salas_poker/'+d.salaId+'/jugadores/'+d.uid), null);
+    }catch(e){}
+    localStorage.removeItem('pc_sesion');
+    document.getElementById('sesion-activa').style.display='none';
+    mostrarLoading(false);
+    showToast('Saliste de la mesa, tu lugar quedó libre');
+  };
+
+  revisarSesionGuardada();
 </script>
 </body>
 </html>
