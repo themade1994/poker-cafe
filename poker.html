@@ -352,6 +352,7 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
   const SUITS = ['♠','♥','♦','♣'];
+  window.debugLog = function(){}; // el panel visual ya se quitó; estas llamadas quedan sin efecto
 
   window.estado = { salaId:null, uid:null, nombre:null, jugadoresMax:3, cartasPorJugador:1, limiteCarta:400,
     fichaConfig:{intervencion:4, salto:1}, nivelIntervencion:{nombre:'Ágil', caracteres:650, tiempoSeg:120} };
@@ -937,17 +938,6 @@
   };
 
   revisarSesionGuardada();
-</script>
-<div id="debug-panel" style="position:fixed;bottom:0;left:0;right:0;max-height:110px;overflow-y:auto;background:rgba(0,0,0,.88);color:#7fffb0;font-family:monospace;font-size:.62rem;line-height:1.5;padding:6px 10px;z-index:9999;white-space:pre-wrap;"></div>
-<script>
-  window.debugLog = function(msg){
-    const p = document.getElementById('debug-panel');
-    const linea = document.createElement('div');
-    linea.textContent = '▸ '+msg;
-    p.appendChild(linea);
-    p.scrollTop = p.scrollHeight;
-  };
-  window.addEventListener('error', e=> window.debugLog('ERROR: '+e.message));
 </script>
 </body>
 </html>
