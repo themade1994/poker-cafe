@@ -906,7 +906,7 @@
     window.estado.fichaConfig=sala.fichaConfig; window.estado.nivelIntervencion=sala.nivelIntervencion;
     try{
       onDisconnect(ref(db,'salas_poker/'+salaId+'/jugadores/'+uid+'/conectado')).set(false);
-      update(ref(db,'salas_poker/'+salaId+'/jugadores/'+uid+'/conectado'), true).catch(()=>{});
+      set(ref(db,'salas_poker/'+salaId+'/jugadores/'+uid+'/conectado'), true).catch(()=>{});
       if(!sala.jugadores[uid]){
         debugLog('Mi jugador ya no existe en esta sala — no se puede volver');
         showToast('Ya no perteneces a esa mesa');
