@@ -372,6 +372,7 @@
   let mensajesRenderizados = 0; // para hacer scroll solo cuando llegan nuevos
 
   window.irA = function(id){
+    debugLog('irA('+id+')');
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     window.scrollTo(0,0);
@@ -878,29 +879,48 @@
   // ── SESIÓN GUARDADA: sin confirm() nativo (poco confiable entre navegadores) ──
   // En vez de interrumpir con un cuadro del sistema, mostramos botones reales en el Hub.
   async function revisarSesionGuardada(){
-    const s = localStorage.getItem('pc_sesion'); if(!s) return;
+    const s = localStorage.getItem('pc_sesion'); if(!s){ debugLog('No hay sesión guardada'); return; }
     try{
       const {salaId, uid, nombre} = JSON.parse(s);
+      debugLog('Sesión encontrada: sala '+salaId+', uid '+uid);
       const snap = await get(ref(db,'salas_poker/'+salaId));
-      if(!snap.exists() || !snap.val().jugadores || !snap.val().jugadores[uid]){ localStorage.removeItem('pc_sesion'); return; }
+      if(!snap.exists() || !snap.val().jugadores || !snap.val().jugadores[uid]){
+        debugLog('La sala ya no existe o mi jugador ya no está — se borra la sesión guardada');
+        localStorage.removeItem('pc_sesion'); return;
+      }
       window._sesionGuardada = { salaId, uid, nombre, sala: snap.val() };
       document.getElementById('sesion-codigo').textContent = salaId;
       document.getElementById('sesion-activa').style.display='block';
-    }catch(e){ localStorage.removeItem('pc_sesion'); }
+      debugLog('Botón "Volver a mi mesa" visible y listo');
+    }catch(e){ debugLog('ERROR revisando sesión: '+e.message); localStorage.removeItem('pc_sesion'); }
   }
 
   window.volverAMiMesa = function(){
-    const d = window._sesionGuardada; if(!d){ showToast('No se pudo recuperar esa mesa'); return; }
+    debugLog('Tocaste "Volver a mi mesa"');
+    const d = window._sesionGuardada;
+    if(!d){ debugLog('No hay datos de sesión guardados en memoria'); showToast('No se pudo recuperar esa mesa'); return; }
     const {salaId, uid, nombre, sala} = d;
+    debugLog('Sala: '+salaId+' — mi jugador: '+JSON.stringify(sala.jugadores && sala.jugadores[uid]));
     window.estado.salaId=salaId; window.estado.uid=uid; window.estado.nombre=nombre;
     window.estado.jugadoresMax=sala.jugadoresMax; window.estado.cartasPorJugador=sala.cartasPorJugador; window.estado.limiteCarta=sala.limiteCarta;
     window.estado.fichaConfig=sala.fichaConfig; window.estado.nivelIntervencion=sala.nivelIntervencion;
-    onDisconnect(ref(db,'salas_poker/'+salaId+'/jugadores/'+uid+'/conectado')).set(false);
-    update(ref(db,'salas_poker/'+salaId+'/jugadores/'+uid+'/conectado'), true).catch(()=>{});
     try{
-      if(!sala.jugadores[uid].listo){ iniciarWizardCartas(); }
-      else { irA('screen-espera'); cargarEspera(); }
-    }catch(e){ showToast('Ocurrió un problema al volver — intenta de nuevo'); }
+      onDisconnect(ref(db,'salas_poker/'+salaId+'/jugadores/'+uid+'/conectado')).set(false);
+      update(ref(db,'salas_poker/'+salaId+'/jugadores/'+uid+'/conectado'), true).catch(()=>{});
+      if(!sala.jugadores[uid]){
+        debugLog('Mi jugador ya no existe en esta sala — no se puede volver');
+        showToast('Ya no perteneces a esa mesa');
+        return;
+      }
+      if(!sala.jugadores[uid].listo){
+        debugLog('Todavía no había puesto mis cartas — voy al asistente de cartas');
+        iniciarWizardCartas();
+      } else {
+        debugLog('Cartas ya puestas — voy a la sala de espera');
+        irA('screen-espera'); cargarEspera();
+        debugLog('Pantalla cambiada a screen-espera');
+      }
+    }catch(e){ debugLog('ERROR en volverAMiMesa: '+e.message); showToast('Ocurrió un problema al volver — intenta de nuevo'); }
   };
 
   window.salirDeMiMesa = async function(){
@@ -918,7 +938,16 @@
 
   revisarSesionGuardada();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
+<div id="debug-panel" style="position:fixed;bottom:0;left:0;right:0;max-height:110px;overflow-y:auto;background:rgba(0,0,0,.88);color:#7fffb0;font-family:monospace;font-size:.62rem;line-height:1.5;padding:6px 10px;z-index:9999;white-space:pre-wrap;"></div>
+<script>
+  window.debugLog = function(msg){
+    const p = document.getElementById('debug-panel');
+    const linea = document.createElement('div');
+    linea.textContent = '▸ '+msg;
+    p.appendChild(linea);
+    p.scrollTop = p.scrollHeight;
+  };
+  window.addEventListener('error', e=> window.debugLog('ERROR: '+e.message));
+</script>
 </body>
 </html>
