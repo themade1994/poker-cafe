@@ -13,7 +13,7 @@
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html,body{min-height:100vh;background:var(--bg);color:var(--white);font-family:'Georgia',serif;-webkit-font-smoothing:antialiased;}
-  .screen{display:none;min-height:100vh;flex-direction:column;}
+  .screen{display:none;min-height:100vh;min-height:100dvh;flex-direction:column;}
   .screen.active{display:flex;}
   .felt{background:radial-gradient(ellipse at top,#12352a 0%,var(--felt) 55%,var(--bg) 100%);}
 
@@ -115,6 +115,8 @@
 
   .turno-banner{text-align:center;padding:10px 16px;font-size:.8rem;font-family:Arial,sans-serif;color:var(--gray);}
   .turno-banner.mio{color:var(--oro);font-weight:bold;}
+  .turno-reloj{text-align:center;font-size:1.5rem;font-weight:bold;font-family:Arial,sans-serif;color:var(--oro);margin-bottom:6px;}
+  .turno-reloj.urgente{color:var(--danger);}
 
   .historial{flex:1;padding:10px 16px;overflow-y:auto;}
   .msg-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;}
@@ -130,7 +132,7 @@
 
   .citar-flotante{position:fixed;background:var(--oro);color:#1a1400;padding:8px 16px;border-radius:20px;font-size:.78rem;font-weight:bold;font-family:Arial,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.4);z-index:600;display:none;cursor:pointer;}
 
-  .compose-wrap{border-top:1px solid var(--border);background:var(--surface);padding:14px 16px 18px;}
+  .compose-wrap{border-top:1px solid var(--border);background:var(--surface);padding:14px 16px 18px;position:sticky;bottom:0;z-index:20;box-shadow:0 -6px 16px rgba(0,0,0,.4);}
   .compose-bloque{margin-bottom:12px;}
   .compose-cita{border-left:3px solid var(--oro);padding:8px 10px;margin-bottom:6px;font-size:.8rem;color:var(--gray);font-style:italic;background:rgba(212,175,55,.06);border-radius:0 6px 6px 0;position:relative;}
   .compose-cita-autor{font-size:.6rem;color:var(--oro);font-family:Arial,sans-serif;display:block;margin-bottom:3px;font-style:normal;}
@@ -316,6 +318,7 @@
   </div>
   <div class="arena-jugadores" id="arena-jugadores"></div>
   <div id="fin-banner-cont"></div>
+  <div class="turno-reloj" id="turno-reloj"></div>
   <div class="turno-banner" id="turno-banner">—</div>
   <div class="historial" id="historial-mensajes"></div>
   <div class="compose-wrap" id="compose-wrap"></div>
@@ -371,6 +374,8 @@
   let composeBloques = []; // [{cita:{texto,autor}|null, respuesta:''}]
   let ultimoTurnoUid = null; // para saber cuándo cambió el turno y resetear el compose
   let mensajesRenderizados = 0; // para hacer scroll solo cuando llegan nuevos
+  let turnoTimerUI = null;
+  let turnoTimeoutEjecutado = null; // evita disparar el timeout más de una vez por turno
 
   window.irA = function(id){
     debugLog('irA('+id+')');
@@ -694,7 +699,7 @@
         const elegido = elegibles[Math.floor(Math.random()*elegibles.length)];
         runTransaction(ref(db,'salas_poker/'+codigo+'/partida/turno'), actual=>{
           if(actual !== null) return; // ya lo sorteó otro dispositivo
-          return { jugadorUid:elegido, iniciadoEn:Date.now(), numero:1 };
+          return { jugadorUid:elegido, iniciadoEn:Date.now(), numero:1, duracionSeg:(sala.nivelIntervencion||{}).tiempoSeg||240 };
         });
       }
       document.getElementById('turno-banner').textContent = 'Sorteando quién abre la mesa...';
@@ -712,9 +717,83 @@
     if(ultimoTurnoUid !== turno.jugadorUid+'-'+turno.numero){
       ultimoTurnoUid = turno.jugadorUid+'-'+turno.numero;
       composeBloques = esMiTurno ? [{cita:null, respuesta:''}] : [];
+      turnoTimeoutEjecutado = null;
+      iniciarRelojTurno(sala, turno, esMiTurno, fichas);
     }
 
     renderCompose(sala, p, jugadores, fichas, turno, esMiTurno);
+  }
+
+  // ── CRONÓMETRO VISIBLE DEL TURNO (y timeout automático) ──
+  function iniciarRelojTurno(sala, turno, esMiTurno, fichas){
+    if(turnoTimerUI) clearInterval(turnoTimerUI);
+    const duracion = turno.duracionSeg || 240;
+    function tick(){
+      const transcurrido = Math.floor((Date.now() - turno.iniciadoEn)/1000);
+      const restante = duracion - transcurrido;
+      const reloj = document.getElementById('turno-reloj');
+      if(reloj){
+        const mm = Math.floor(Math.max(0,restante)/60), ss = Math.max(0,restante)%60;
+        reloj.textContent = mm+':'+String(ss).padStart(2,'0');
+        reloj.className = 'turno-reloj'+(restante<=15?' urgente':'');
+      }
+      if(restante<=0 && esMiTurno && turnoTimeoutEjecutado!==ultimoTurnoUid){
+        turnoTimeoutEjecutado = ultimoTurnoUid;
+        clearInterval(turnoTimerUI);
+        ejecutarTimeoutDeMiTurno(fichas);
+      }
+      // Red de seguridad: si a quien le tocaba se quedó sin conexión y nunca resolvió su turno,
+      // cualquier otro dispositivo conectado puede forzar que pierda el turno tras un margen extra.
+      if(restante <= -10 && !esMiTurno && turnoTimeoutEjecutado!==ultimoTurnoUid){
+        turnoTimeoutEjecutado = ultimoTurnoUid;
+        clearInterval(turnoTimerUI);
+        forzarTimeoutAjeno(sala, turno);
+      }
+    }
+    tick();
+    turnoTimerUI = setInterval(tick, 1000);
+  }
+
+  // Cuando se me acaba mi propio tiempo: publico lo que tenga escrito, o salto si no escribí nada.
+  async function ejecutarTimeoutDeMiTurno(fichas){
+    const hayTexto = composeBloques.some(b=>b.respuesta.trim().length>0);
+    const misFichas = fichas[window.estado.uid]||{intervencion:0,salto:0};
+    if(hayTexto){
+      await enviarTurno();
+    } else if(misFichas.salto>0){
+      await saltarTurno();
+    } else {
+      // No escribió nada y ya no tiene fichas de salto: pierde el turno igual, consumiendo 1 ficha de intervención.
+      const codigo = window.estado.salaId;
+      const sala = salaActual, p = sala.partida, turno = p.turno;
+      mostrarLoading(true);
+      const msgRef = ref(db,'salas_poker/'+codigo+'/partida/mensajes/m'+Date.now());
+      await set(msgRef, { sistema:true, texto: window.estado.nombre+' perdió su turno por tiempo (sin fichas de salto).', timestamp: Date.now() });
+      await update(ref(db,'salas_poker/'+codigo+'/partida/fichas/'+window.estado.uid), { intervencion: Math.max(0,misFichas.intervencion-1) });
+      await pasarTurno(codigo, sala, turno);
+      mostrarLoading(false);
+    }
+  }
+
+  // Red de seguridad si el jugador activo se desconectó y no resolvió su turno a tiempo.
+  async function forzarTimeoutAjeno(sala, turnoVencido){
+    const codigo = window.estado.salaId;
+    // Transacción: solo el primer dispositivo que detecte el vencimiento ejecuta el salto forzado.
+    const resultado = await runTransaction(ref(db,'salas_poker/'+codigo+'/partida/turno'), actual=>{
+      if(!actual || actual.jugadorUid!==turnoVencido.jugadorUid || actual.numero!==turnoVencido.numero) return; // ya cambió, no hacer nada
+      actual._forzando = true;
+      return actual;
+    });
+    if(!resultado.committed) return;
+    const uidAusente = turnoVencido.jugadorUid;
+    const nombreAusente = (sala.jugadores[uidAusente]||{}).nombre || 'Ese jugador';
+    const msgRef = ref(db,'salas_poker/'+codigo+'/partida/mensajes/m'+Date.now());
+    await set(msgRef, { sistema:true, texto: nombreAusente+' no respondió a tiempo (desconexión) y perdió el turno.', timestamp: Date.now() });
+    const snapFichas = await get(ref(db,'salas_poker/'+codigo+'/partida/fichas'));
+    const fichas = snapFichas.val()||{};
+    const f = fichas[uidAusente]||{intervencion:0,salto:0};
+    await update(ref(db,'salas_poker/'+codigo+'/partida/fichas/'+uidAusente), { intervencion: Math.max(0,f.intervencion-1) });
+    await pasarTurno(codigo, sala, turnoVencido);
   }
 
   // ── HISTORIAL DE MENSAJES ──
@@ -797,7 +876,7 @@
     }).join('');
 
     const cls = totalTexto>nivel.caracteres ? 'over' : (totalTexto>nivel.caracteres*0.85 ? 'warn' : '');
-    html += '<div class="compose-counter '+cls+'">'+totalTexto+' / '+nivel.caracteres+' caracteres</div>';
+    html += '<div class="compose-counter '+cls+'" id="compose-counter">'+totalTexto+' / '+nivel.caracteres+' caracteres</div>';
     html += '<div class="compose-botones">'
       + '<button class="btn-ghost" id="btn-saltar" onclick="saltarTurno()" '+(misFichas.salto<=0?'style="display:none;"':'')+'>SALTAR ('+misFichas.salto+')</button>'
       + '<button class="btn-primary" id="btn-jugar" onclick="enviarTurno()">JUGAR</button>'
@@ -808,13 +887,22 @@
     document.getElementById('btn-jugar').disabled = !puedeEnviar;
   }
 
+  // Se ejecuta en cada letra que escribes. A propósito NO reconstruye el HTML del cuadro de texto
+  // (eso era lo que causaba que el cursor saltara al inicio y el texto se viera "al revés").
+  // Solo actualiza el contador y el botón, dejando el textarea tal cual está mientras escribes.
   window.actualizarBloque = function(el){
     composeBloques[parseInt(el.dataset.idx)].respuesta = el.value;
     const sala = salaActual;
-    renderCompose(sala, sala.partida, sala.jugadores, sala.partida.fichas, sala.partida.turno, true);
-    // recuperar foco y cursor tras el re-render
-    const activo = document.querySelector('.compose-textarea[data-idx="'+el.dataset.idx+'"]');
-    if(activo){ activo.focus(); }
+    const nivel = (sala && sala.nivelIntervencion) || {caracteres:650};
+    const totalTexto = composeBloques.reduce((a,b)=>a+b.respuesta.length,0);
+    const counter = document.getElementById('compose-counter');
+    if(counter){
+      const cls = totalTexto>nivel.caracteres ? 'over' : (totalTexto>nivel.caracteres*0.85 ? 'warn' : '');
+      counter.className = 'compose-counter '+cls;
+      counter.textContent = totalTexto+' / '+nivel.caracteres+' caracteres';
+    }
+    const btn = document.getElementById('btn-jugar');
+    if(btn){ btn.disabled = !(totalTexto>0 && totalTexto<=nivel.caracteres); }
   };
   window.quitarBloque = function(i){
     composeBloques.splice(i,1);
@@ -862,7 +950,7 @@
     const elegibles = Object.keys(jugadores).filter(uid=>(fichas[uid]||{}).intervencion>0);
     if(elegibles.length===0) return; // fin de partida, se detecta en el próximo render
     const siguiente = elegibles[Math.floor(Math.random()*elegibles.length)];
-    await update(ref(db,'salas_poker/'+codigo+'/partida'), { turno: { jugadorUid:siguiente, iniciadoEn:Date.now(), numero:(turnoAnterior.numero||0)+1 } });
+    await update(ref(db,'salas_poker/'+codigo+'/partida'), { turno: { jugadorUid:siguiente, iniciadoEn:Date.now(), numero:(turnoAnterior.numero||0)+1, duracionSeg:(sala.nivelIntervencion||{}).tiempoSeg||240 } });
   }
 
   // ── APUNTES FLOTANTES (personales, guardados solo en este dispositivo) ──
