@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Póker Café</title>
+<style>
+  :root{
+    --bg:#0d1b2a; --surface:#162032; --surface2:#1e2d40;
+    --border:#2a3f58; --oro:#d4af37; --oro-dim:#a3841f; --oro-soft:#e8c766;
+    --white:#ffffff; --gray:#8aa0b8; --gray-dim:#4a6070; --danger:#e05c5c;
+    --felt:#0f2a20;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{min-height:100vh;background:var(--bg);color:var(--white);font-family:'Georgia',serif;-webkit-font-smoothing:antialiased;}
+  .screen{display:none;min-height:100vh;min-height:100dvh;flex-direction:column;}
+  .screen.active{display:flex;}
+  .felt{background:radial-gradient(ellipse at top,#12352a 0%,var(--felt) 55%,var(--bg) 100%);}
+
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;}
+  .header-back{background:none;border:none;color:var(--oro);font-size:1.4rem;cursor:pointer;padding:0 8px 0 0;}
+  .header-title{font-size:.92rem;flex:1;color:var(--white);letter-spacing:.02em;}
+  .header-tag{font-size:.65rem;color:var(--oro);font-family:Arial,sans-serif;letter-spacing:.1em;}
+
+  .btn-primary{background:var(--oro);color:#1a1400;border:none;padding:15px 28px;font-size:.85rem;letter-spacing:.08em;cursor:pointer;border-radius:8px;font-family:'Georgia',serif;font-weight:bold;width:100%;max-width:340px;transition:background .2s;}
+  .btn-primary:hover{background:var(--oro-soft);}
+  .btn-primary:disabled{background:var(--gray-dim);color:var(--gray);cursor:not-allowed;opacity:.6;}
+  .btn-secondary{background:none;border:2px solid var(--oro);color:var(--oro);padding:13px 28px;font-size:.85rem;letter-spacing:.08em;cursor:pointer;border-radius:8px;font-family:'Georgia',serif;width:100%;max-width:340px;}
+  .btn-ghost{background:none;border:1px solid var(--border);color:var(--gray);padding:12px 24px;font-size:.8rem;cursor:pointer;border-radius:8px;font-family:'Georgia',serif;width:100%;max-width:340px;}
+
+  .hub-suit{font-size:2.6rem;color:var(--oro);margin-bottom:6px;letter-spacing:.2em;}
+  .hub-titulo{font-size:2rem;color:var(--white);margin-bottom:4px;letter-spacing:.02em;}
+  .hub-titulo span{color:var(--oro);}
+  .hub-sub{font-size:.85rem;color:var(--gray);font-style:italic;margin-bottom:44px;max-width:300px;line-height:1.6;}
+
+  .form-body{flex:1;padding:24px 20px;overflow-y:auto;}
+  .form-group{margin-bottom:22px;}
+  .form-label{display:block;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--oro);margin-bottom:9px;font-family:Arial,sans-serif;}
+  .form-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--white);font-family:'Georgia',serif;font-size:.95rem;outline:none;}
+  .form-input:focus{border-color:var(--oro);}
+  .form-input::placeholder{color:var(--gray-dim);font-style:italic;}
+  .chip-select{display:flex;gap:8px;}
+  .chip-opt{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 8px;text-align:center;cursor:pointer;font-family:Arial,sans-serif;font-size:.85rem;color:var(--gray);}
+  .chip-opt.sel{border-color:var(--oro);color:var(--oro);background:rgba(212,175,55,.08);font-weight:bold;}
+  .form-footer{padding:16px 20px 36px;display:flex;flex-direction:column;gap:10px;align-items:center;}
+
+  /* CARTA (wizard) */
+  .carta-wrap{flex:1;display:flex;flex-direction:column;align-items:center;padding:22px 18px;}
+  .carta-panel{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 20px 18px;position:relative;box-shadow:0 8px 30px rgba(0,0,0,.35);}
+  .carta-corner{position:absolute;top:14px;left:16px;font-family:Arial,sans-serif;font-size:.72rem;color:var(--oro);letter-spacing:.05em;}
+  .carta-suit{position:absolute;top:12px;right:18px;font-size:1.3rem;color:var(--oro-dim);opacity:.8;}
+  .carta-titulo-lbl{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--oro);margin:26px 0 8px;font-family:Arial,sans-serif;}
+  .carta-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--white);font-family:'Georgia',serif;font-size:.98rem;outline:none;margin-bottom:16px;}
+  .carta-input:focus{border-color:var(--oro);}
+  .carta-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--white);font-family:'Georgia',serif;font-size:.9rem;line-height:1.65;outline:none;resize:vertical;min-height:120px;text-align:justify;}
+  .carta-textarea:focus{border-color:var(--oro);}
+  .carta-counter{text-align:right;font-size:.68rem;color:var(--gray-dim);margin-top:6px;font-family:Arial,sans-serif;}
+  .carta-counter.ok{color:#4caf7d;}
+  .carta-counter.warn{color:#f0a500;}
+  .carta-counter.over{color:var(--danger);}
+  .carta-progreso{display:flex;gap:6px;margin:18px 0 4px;}
+  .carta-dot{flex:1;height:4px;border-radius:2px;background:var(--border);}
+  .carta-dot.done{background:var(--oro);}
+  .carta-dot.actual{background:var(--oro-soft);}
+  .carta-nav{width:100%;max-width:400px;display:flex;gap:10px;margin-top:20px;}
+  .carta-nav .btn-primary,.carta-nav .btn-ghost{max-width:none;}
+
+  /* CODIGO / ESPERA */
+  .codigo-box{background:var(--surface2);border:2px solid var(--oro);padding:22px 28px;border-radius:10px;margin-bottom:22px;width:100%;max-width:340px;text-align:center;}
+  .codigo-label{font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray);margin-bottom:8px;font-family:Arial,sans-serif;}
+  .codigo-value{font-size:2rem;letter-spacing:.25em;font-weight:bold;color:var(--oro);font-family:Arial,sans-serif;}
+  .codigo-input{font-size:1.8rem;letter-spacing:.3em;text-align:center;background:var(--surface2);border:2px solid var(--border);border-radius:8px;color:var(--oro);width:100%;max-width:300px;padding:14px;font-family:Arial,sans-serif;outline:none;text-transform:uppercase;margin-bottom:16px;}
+  .codigo-input:focus{border-color:var(--oro);}
+
+  .mesa-lista{width:100%;max-width:360px;margin-bottom:20px;}
+  .jugador-row{display:flex;align-items:center;gap:12px;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;}
+  .jugador-punto{width:9px;height:9px;border-radius:50%;background:var(--gray-dim);flex-shrink:0;}
+  .jugador-punto.on{background:#4caf7d;}
+  .jugador-nombre{flex:1;font-size:.92rem;color:var(--white);}
+  .jugador-tag{font-size:.65rem;color:var(--oro);font-family:Arial,sans-serif;letter-spacing:.05em;}
+  .jugador-listo{font-size:.65rem;color:var(--gray-dim);font-family:Arial,sans-serif;}
+  .jugador-listo.si{color:#4caf7d;}
+  .espera-nota{font-size:.8rem;color:var(--gray);font-style:italic;text-align:center;margin-bottom:6px;max-width:320px;line-height:1.6;}
+  .espera-config{font-size:.68rem;color:var(--gray-dim);font-family:Arial,sans-serif;text-align:center;margin-bottom:24px;}
+
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);border:1px solid var(--oro);color:var(--oro);padding:11px 22px;border-radius:30px;font-size:.82rem;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999;font-family:Arial,sans-serif;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  #loading{position:fixed;inset:0;background:rgba(13,27,42,.9);display:none;align-items:center;justify-content:center;z-index:500;font-size:.9rem;color:var(--oro);font-style:italic;}
+
+  /* INICIAR PARTIDA (en espera) */
+  .btn-iniciar-wrap{width:100%;max-width:360px;margin-top:6px;}
+  .espera-mensaje-host{font-size:.72rem;color:var(--gray-dim);text-align:center;font-family:Arial,sans-serif;margin-top:10px;line-height:1.5;}
+
+  /* MINUTO DE GRACIA */
+  .gracia-reloj{font-size:3.4rem;color:var(--oro);font-family:Arial,sans-serif;font-weight:bold;letter-spacing:.03em;margin-bottom:6px;}
+  .gracia-reloj.urgente{color:var(--danger);}
+  .gracia-lbl{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gray);margin-bottom:30px;font-family:Arial,sans-serif;}
+  .gracia-carta{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:26px 22px;box-shadow:0 8px 30px rgba(0,0,0,.35);}
+  .gracia-autor{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--oro);margin-bottom:10px;font-family:Arial,sans-serif;}
+  .gracia-titulo{font-size:1.25rem;color:var(--white);margin-bottom:14px;line-height:1.4;}
+  .gracia-arg{font-size:.92rem;color:var(--gray);line-height:1.7;text-align:justify;}
+  .gracia-nota{font-size:.75rem;color:var(--gray-dim);font-style:italic;text-align:center;margin-top:26px;max-width:320px;line-height:1.6;}
+
+  /* ARENA (placeholder paso 2) */
+  .arena-tema{width:100%;background:var(--surface);border-bottom:1px solid var(--border);padding:16px 20px;text-align:center;position:sticky;top:0;z-index:5;}
+  .arena-tema-titulo{font-size:1.05rem;color:var(--white);margin-bottom:4px;}
+  .arena-tema-autor{font-size:.65rem;color:var(--oro);font-family:Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;}
+  .arena-jugadores{padding:14px 20px;display:flex;gap:8px;overflow-x:auto;}
+  .arena-jug-card{flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 14px;text-align:center;}
+  .arena-jug-card.activo{border-color:var(--oro);background:rgba(212,175,55,.08);}
+  .arena-jug-nombre{font-size:.72rem;color:var(--white);margin-bottom:4px;white-space:nowrap;}
+  .arena-jug-fichas{display:flex;gap:8px;justify-content:center;font-family:Arial,sans-serif;font-size:.65rem;color:var(--gray);}
+  .arena-jug-fichas b{color:var(--oro);}
+  .arena-pendiente{text-align:center;color:var(--gray-dim);font-style:italic;font-size:.82rem;margin:14px auto;max-width:300px;line-height:1.6;}
+
+  .turno-banner{text-align:center;padding:10px 16px;font-size:.8rem;font-family:Arial,sans-serif;color:var(--gray);}
+  .turno-banner.mio{color:var(--oro);font-weight:bold;}
+  .turno-reloj{text-align:center;font-size:1.5rem;font-weight:bold;font-family:Arial,sans-serif;color:var(--oro);margin-bottom:6px;}
+  .turno-reloj.urgente{color:var(--danger);}
+
+  .historial{flex:1;padding:10px 16px;overflow-y:auto;}
+  .msg-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;}
+  .msg-card.sistema{background:transparent;border:none;text-align:center;color:var(--gray-dim);font-style:italic;font-size:.75rem;padding:4px;}
+  .msg-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+  .msg-autor{font-size:.78rem;color:var(--oro);font-weight:bold;}
+  .msg-meta{font-size:.62rem;color:var(--gray-dim);font-family:Arial,sans-serif;}
+  .msg-bloque{margin-bottom:10px;}
+  .msg-cita{border-left:3px solid var(--oro-dim);padding:6px 10px;margin-bottom:6px;font-size:.82rem;color:var(--gray);font-style:italic;background:rgba(212,175,55,.05);}
+  .msg-cita-autor{font-size:.6rem;color:var(--oro-dim);font-family:Arial,sans-serif;display:block;margin-bottom:3px;font-style:normal;letter-spacing:.05em;}
+  .msg-respuesta{font-size:.9rem;color:var(--white);line-height:1.6;text-align:justify;}
+  .msg-selectable{user-select:text;-webkit-user-select:text;}
+
+  .citar-flotante{position:fixed;background:var(--oro);color:#1a1400;padding:8px 16px;border-radius:20px;font-size:.78rem;font-weight:bold;font-family:Arial,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.4);z-index:600;display:none;cursor:pointer;}
+
+  .compose-wrap{border-top:1px solid var(--border);background:var(--surface);padding:14px 16px 18px;position:sticky;bottom:0;z-index:20;box-shadow:0 -6px 16px rgba(0,0,0,.4);}
+  .compose-bloque{margin-bottom:12px;}
+  .compose-cita{border-left:3px solid var(--oro);padding:8px 10px;margin-bottom:6px;font-size:.8rem;color:var(--gray);font-style:italic;background:rgba(212,175,55,.06);border-radius:0 6px 6px 0;position:relative;}
+  .compose-cita-autor{font-size:.6rem;color:var(--oro);font-family:Arial,sans-serif;display:block;margin-bottom:3px;font-style:normal;}
+  .compose-cita-quitar{position:absolute;top:6px;right:8px;color:var(--danger);font-size:.7rem;cursor:pointer;font-family:Arial,sans-serif;}
+  .compose-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--white);font-family:'Georgia',serif;font-size:.9rem;line-height:1.5;outline:none;resize:vertical;min-height:60px;}
+  .compose-textarea:focus{border-color:var(--oro);}
+  .compose-counter{text-align:right;font-size:.66rem;color:var(--gray-dim);margin:4px 0 12px;font-family:Arial,sans-serif;}
+  .compose-counter.warn{color:#f0a500;}
+  .compose-counter.over{color:var(--danger);}
+  .compose-botones{display:flex;gap:10px;}
+  .compose-botones .btn-primary,.compose-botones .btn-ghost{max-width:none;padding:12px;font-size:.78rem;}
+  .compose-espera{text-align:center;color:var(--gray);font-style:italic;font-size:.85rem;padding:18px;}
+
+  .notas-fab{position:fixed;bottom:20px;right:16px;width:50px;height:50px;border-radius:50%;background:var(--oro);color:#1a1400;border:none;font-size:1.3rem;box-shadow:0 4px 14px rgba(0,0,0,.4);z-index:400;cursor:pointer;}
+  .notas-panel{position:fixed;inset:0;background:rgba(13,27,42,.92);z-index:700;display:none;flex-direction:column;padding:20px;}
+  .notas-panel.show{display:flex;}
+  .notas-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .notas-titulo{font-size:.95rem;color:var(--oro);}
+  .notas-cerrar{background:none;border:none;color:var(--white);font-size:1.6rem;cursor:pointer;}
+  .notas-textarea{flex:1;width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;color:var(--white);font-family:'Georgia',serif;font-size:.92rem;line-height:1.7;outline:none;resize:none;}
+  .notas-nota{font-size:.68rem;color:var(--gray-dim);text-align:center;margin-top:10px;font-family:Arial,sans-serif;}
+
+  .fin-banner{background:var(--danger);color:#fff;text-align:center;padding:14px;font-size:.82rem;font-family:Arial,sans-serif;}
+  .config-warning{font-size:.72rem;color:#f0a500;font-family:Arial,sans-serif;text-align:center;margin-top:10px;line-height:1.5;display:none;}
+  .config-warning.show{display:block;}
+</style>
+</head>
+<body>
+
+<!-- HUB -->
+<div id="screen-hub" class="screen active felt">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px 24px;text-align:center;">
+    <div class="hub-suit">♠ ♥ ♦ ♣</div>
+    <div class="hub-titulo">Póker <span>Café</span></div>
+    <div class="hub-sub">Una mesa, un mazo de temas, y solo quien mejor argumenta bajo presión se queda con la partida.</div>
+    <div style="display:flex;flex-direction:column;gap:12px;width:100%;max-width:340px;">
+      <button class="btn-primary" onclick="irA('screen-crear')">CREAR UNA SALA</button>
+      <button class="btn-secondary" onclick="irA('screen-unirse')">UNIRME CON CÓDIGO</button>
+    </div>
+    <div id="sesion-activa" style="display:none;margin-top:24px;width:100%;max-width:340px;">
+      <div style="font-size:.78rem;color:var(--gray);text-align:center;margin-bottom:10px;">Tienes una mesa abierta (código <span id="sesion-codigo" style="color:var(--oro);font-weight:bold;"></span>)</div>
+      <button class="btn-primary" onclick="volverAMiMesa()" style="max-width:none;">VOLVER A MI MESA</button>
+      <button class="btn-ghost" onclick="salirDeMiMesa()" style="max-width:none;margin-top:8px;">SALIR Y LIBERAR MI LUGAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREAR SALA -->
+<div id="screen-crear" class="screen">
+  <div class="header">
+    <button class="header-back" onclick="irA('screen-hub')">←</button>
+    <div class="header-title">Crear sala</div>
+  </div>
+  <div class="form-body">
+    <div class="form-group">
+      <label class="form-label">Tu seudónimo</label>
+      <input class="form-input" id="crear-nombre" placeholder="¿Cómo te verán en la mesa?" maxlength="24"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Jugadores en la mesa</label>
+      <div class="chip-select" id="sel-jugadores">
+        <div class="chip-opt" data-v="3" onclick="seleccionar('sel-jugadores',this,'jugadoresMax')">3</div>
+        <div class="chip-opt" data-v="4" onclick="seleccionar('sel-jugadores',this,'jugadoresMax')">4</div>
+        <div class="chip-opt" data-v="5" onclick="seleccionar('sel-jugadores',this,'jugadoresMax')">5</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Cartas (temas) por jugador</label>
+      <div class="chip-select" id="sel-cartas">
+        <div class="chip-opt" data-v="1" onclick="seleccionar('sel-cartas',this,'cartasPorJugador')">1</div>
+        <div class="chip-opt" data-v="2" onclick="seleccionar('sel-cartas',this,'cartasPorJugador')">2</div>
+        <div class="chip-opt" data-v="3" onclick="seleccionar('sel-cartas',this,'cartasPorJugador')">3</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Caracteres por carta (título + argumento)</label>
+      <div class="chip-select" id="sel-limite">
+        <div class="chip-opt" data-v="250" onclick="seleccionar('sel-limite',this,'limiteCarta')">80–250</div>
+        <div class="chip-opt" data-v="400" onclick="seleccionar('sel-limite',this,'limiteCarta')">80–400</div>
+        <div class="chip-opt" data-v="600" onclick="seleccionar('sel-limite',this,'limiteCarta')">80–600</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fichas de la mesa (intervención × salto)</label>
+      <div class="chip-select" id="sel-fichas">
+        <div class="chip-opt" data-v="4-1" onclick="seleccionarFichas(this)">4 × 1</div>
+        <div class="chip-opt" data-v="8-2" onclick="seleccionarFichas(this)">8 × 2</div>
+        <div class="chip-opt" data-v="12-3" onclick="seleccionarFichas(this)">12 × 3</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Extensión y tiempo por intervención</label>
+      <div class="chip-select" id="sel-nivel">
+        <div class="chip-opt" data-v="0" onclick="seleccionarNivel(this)">Ágil<br><span style="font-size:.6rem;opacity:.7;">650c · 2min</span></div>
+        <div class="chip-opt" data-v="1" onclick="seleccionarNivel(this)">Estándar<br><span style="font-size:.6rem;opacity:.7;">1200c · 4min</span></div>
+        <div class="chip-opt" data-v="2" onclick="seleccionarNivel(this)">Profunda<br><span style="font-size:.6rem;opacity:.7;">1600c · 8min</span></div>
+        <div class="chip-opt" data-v="3" onclick="seleccionarNivel(this)">Masters<br><span style="font-size:.6rem;opacity:.7;">3000c · 15min</span></div>
+      </div>
+      <div class="config-warning" id="config-warning">Con esta combinación, la partida puede durar bastante más de una hora si todos agotan su tiempo.</div>
+    </div>
+  </div>
+  <div class="form-footer">
+    <button class="btn-primary" onclick="crearSala()">CREAR SALA</button>
+  </div>
+</div>
+
+<!-- UNIRSE -->
+<div id="screen-unirse" class="screen">
+  <div class="header">
+    <button class="header-back" onclick="irA('screen-hub')">←</button>
+    <div class="header-title">Unirme a una sala</div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:36px 24px;">
+    <input class="codigo-input" id="unirse-codigo" maxlength="6" placeholder="XXXXXX" oninput="this.value=this.value.toUpperCase()"/>
+    <input class="form-input" id="unirse-nombre" placeholder="Tu seudónimo" maxlength="24" style="max-width:300px;margin-bottom:20px;"/>
+    <button class="btn-primary" onclick="unirseSala()">ENTRAR A LA MESA</button>
+  </div>
+</div>
+
+<!-- WIZARD DE CARTAS -->
+<div id="screen-cartas" class="screen felt">
+  <div class="header" style="background:transparent;border-bottom:1px solid rgba(255,255,255,.06);">
+    <div class="header-title" id="cartas-header-title">Tu carta 1</div>
+    <div class="header-tag" id="cartas-header-tag"></div>
+  </div>
+  <div class="carta-wrap">
+    <div class="carta-progreso" id="carta-progreso" style="max-width:400px;"></div>
+    <div class="carta-panel">
+      <div class="carta-corner" id="carta-corner">1/1</div>
+      <div class="carta-suit" id="carta-suit">♠</div>
+      <div class="carta-titulo-lbl">Título o pregunta</div>
+      <input class="carta-input" id="carta-titulo" placeholder="¿Sobre qué quieres debatir?" maxlength="120" oninput="actualizarContadorCarta()"/>
+      <div class="carta-titulo-lbl">Argumento o contexto</div>
+      <textarea class="carta-textarea" id="carta-argumento" placeholder="Desarrolla brevemente el punto de partida..." oninput="actualizarContadorCarta()"></textarea>
+      <div class="carta-counter" id="carta-counter">0 / 0</div>
+    </div>
+    <div class="carta-nav">
+      <button class="btn-ghost" id="carta-btn-atras" onclick="cartaAtras()">Atrás</button>
+      <button class="btn-primary" id="carta-btn-siguiente" onclick="cartaSiguiente()" disabled>Siguiente</button>
+    </div>
+  </div>
+</div>
+
+<!-- SALA DE ESPERA -->
+<div id="screen-espera" class="screen felt">
+  <div class="header" style="background:transparent;border-bottom:1px solid rgba(255,255,255,.06);">
+    <div class="header-title">Sala de espera</div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:32px 20px;">
+    <div class="codigo-box">
+      <div class="codigo-label">Código de la sala</div>
+      <div class="codigo-value" id="espera-codigo">------</div>
+    </div>
+    <div class="espera-nota">Comparte este código con los demás jugadores. La partida comienza cuando la mesa esté completa y todos hayan puesto sus cartas.</div>
+    <div class="espera-config" id="espera-config"></div>
+    <div class="mesa-lista" id="mesa-lista"></div>
+    <div class="btn-iniciar-wrap" id="btn-iniciar-wrap" style="display:none;">
+      <button class="btn-primary" id="btn-iniciar-partida" onclick="iniciarPartida()">INICIAR PARTIDA</button>
+      <div class="espera-mensaje-host">Solo el anfitrión puede iniciar, y solo cuando la mesa esté completa y todos hayan puesto sus cartas.</div>
+    </div>
+  </div>
+</div>
+
+<!-- MINUTO DE GRACIA -->
+<div id="screen-gracia" class="screen felt">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;">
+    <div class="gracia-reloj" id="gracia-reloj">60</div>
+    <div class="gracia-lbl" id="gracia-etiqueta">El tema fue elegido al azar — memorízalo</div>
+    <div class="gracia-carta">
+      <div class="gracia-autor" id="gracia-autor">Carta de —</div>
+      <div class="gracia-titulo" id="gracia-titulo">—</div>
+      <div class="gracia-arg" id="gracia-arg">—</div>
+    </div>
+    <div class="gracia-nota">Nadie puede escribir todavía. Cuando el reloj llegue a cero, el orden de turnos se decide al azar.</div>
+  </div>
+</div>
+
+<!-- ARENA -->
+<div id="screen-arena" class="screen felt">
+  <div class="arena-tema">
+    <div class="arena-tema-titulo" id="arena-tema-titulo">—</div>
+    <div class="arena-tema-autor" id="arena-tema-autor">Carta de —</div>
+  </div>
+  <div class="arena-jugadores" id="arena-jugadores"></div>
+  <div id="fin-banner-cont"></div>
+  <div class="turno-reloj" id="turno-reloj"></div>
+  <div class="turno-banner" id="turno-banner">—</div>
+  <div class="historial" id="historial-mensajes"></div>
+  <div class="compose-wrap" id="compose-wrap"></div>
+  <button class="notas-fab" onclick="abrirNotas()">📝</button>
+  <div class="notas-panel" id="notas-panel">
+    <div class="notas-head">
+      <div class="notas-titulo">Tus apuntes</div>
+      <button class="notas-cerrar" onclick="cerrarNotas()">×</button>
+    </div>
+    <textarea class="notas-textarea" id="notas-textarea" placeholder="Copia aquí lo que quieras citar o recordar mientras esperas tu turno..." oninput="guardarNotas()"></textarea>
+    <div class="notas-nota">Solo tú puedes ver estos apuntes — no se comparten con la mesa.</div>
+  </div>
+</div>
+
+<div class="citar-flotante" id="citar-flotante">Citar</div>
+
+<div id="loading">Preparando la mesa...</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, set, get, update, onValue, onDisconnect, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  // Mismo proyecto de Firebase que Café Abierto, rama separada: salas_poker/
+  const firebaseConfig = {
+    apiKey:"AIzaSyDtR_-GKB-xULYY4pNofWKdEVjR9ve0yyk",
+    authDomain:"cafe-abierto.firebaseapp.com",
+    databaseURL:"https://cafe-abierto-default-rtdb.firebaseio.com",
+    projectId:"cafe-abierto",
+    storageBucket:"cafe-abierto.firebasestorage.app",
+    messagingSenderId:"522167725222",
+    appId:"1:522167725222:web:0fd5a5288ad29773b55867"
+  };
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const SUITS = ['♠','♥','♦','♣'];
+  window.debugLog = function(){}; // el panel visual ya se quitó; estas llamadas quedan sin efecto
+
+  window.estado = { salaId:null, uid:null, nombre:null, jugadoresMax:3, cartasPorJugador:1, limiteCarta:400,
+    fichaConfig:{intervencion:4, salto:1}, nivelIntervencion:{nombre:'Ágil', caracteres:650, tiempoSeg:120} };
+  const NIVELES = [
+    {nombre:'Ágil', caracteres:650, tiempoSeg:120},
+    {nombre:'Estándar', caracteres:1200, tiempoSeg:240},
+    {nombre:'Profunda', caracteres:1600, tiempoSeg:480},
+    {nombre:'Masters', caracteres:3000, tiempoSeg:900}
+  ];
+  let cartaActual = 0;
+  let cartas = [];
+  let salaActual = null;
+  let graciaTimer = null;
+  let turnoTimerUI = null;
+  let pantallaJuegoMostrada = null; // evita re-navegar en cada actualización
+  let composeBloques = []; // [{cita:{texto,autor}|null, respuesta:''}]
+  let ultimoTurnoUid = null; // para saber cuándo cambió el turno y resetear el compose
+  let mensajesRenderizados = 0; // para hacer scroll solo cuando llegan nuevos
+  let turnoTimerUI = null;
+  let turnoTimeoutEjecutado = null; // evita disparar el timeout más de una vez por turno
+
+  window.irA = function(id){
+    debugLog('irA('+id+')');
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0,0);
+  };
+  window.showToast = function(msg){
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),2600);
+  };
+  window.mostrarLoading = v => document.getElementById('loading').style.display = v?'flex':'none';
+
+  window.seleccionar = function(grupoId, el, campo){
+    document.querySelectorAll('#'+grupoId+' .chip-opt').forEach(o=>o.classList.remove('sel'));
+    el.classList.add('sel');
+    window.estado[campo] = parseInt(el.dataset.v);
+  };
+  // valores por defecto preseleccionados
+  document.getElementById('sel-jugadores').children[0].classList.add('sel');
+  document.getElementById('sel-cartas').children[0].classList.add('sel');
+  document.getElementById('sel-limite').children[1].classList.add('sel');
+  document.getElementById('sel-fichas').children[0].classList.add('sel');
+  document.getElementById('sel-nivel').children[0].classList.add('sel');
+
+  window.seleccionarFichas = function(el){
+    document.querySelectorAll('#sel-fichas .chip-opt').forEach(o=>o.classList.remove('sel'));
+    el.classList.add('sel');
+    const [intervencion,salto] = el.dataset.v.split('-').map(Number);
+    window.estado.fichaConfig = { intervencion, salto };
+    actualizarAdvertenciaConfig();
+  };
+  window.seleccionarNivel = function(el){
+    document.querySelectorAll('#sel-nivel .chip-opt').forEach(o=>o.classList.remove('sel'));
+    el.classList.add('sel');
+    window.estado.nivelIntervencion = NIVELES[parseInt(el.dataset.v)];
+    actualizarAdvertenciaConfig();
+  };
+  function actualizarAdvertenciaConfig(){
+    const f = window.estado.fichaConfig, n = window.estado.nivelIntervencion;
+    const minutosMax = Math.round((f.intervencion * n.tiempoSeg) / 60);
+    const warn = document.getElementById('config-warning');
+    if(minutosMax > 45){
+      warn.textContent = 'Con esta combinación, si todos agotan su tiempo, la partida puede durar más de '+minutosMax+' minutos por jugador.';
+      warn.classList.add('show');
+    } else {
+      warn.classList.remove('show');
+    }
+  }
+
+  function generarCodigo(){
+    const ab='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let c=''; for(let i=0;i<6;i++) c+=ab[Math.floor(Math.random()*ab.length)];
+    return c;
+  }
+  function generarUid(){ return 'u'+Date.now()+Math.random().toString(36).slice(2,8); }
+
+  // ── CREAR SALA ──
+  window.crearSala = async function(){
+    const nombre = document.getElementById('crear-nombre').value.trim();
+    if(!nombre){ showToast('Escribe tu seudónimo'); return; }
+    mostrarLoading(true);
+    const codigo = generarCodigo();
+    const uid = generarUid();
+    const salaData = {
+      host: uid,
+      jugadoresMax: window.estado.jugadoresMax,
+      cartasPorJugador: window.estado.cartasPorJugador,
+      limiteCarta: window.estado.limiteCarta,
+      minCarta: 80,
+      fichaConfig: window.estado.fichaConfig,
+      nivelIntervencion: window.estado.nivelIntervencion,
+      estado: 'esperando',
+      creadoEn: Date.now(),
+      jugadores: { [uid]: { nombre, listo:false, conectado:true, cartas:[] } }
+    };
+    await set(ref(db,'salas_poker/'+codigo), salaData);
+    window.estado.salaId = codigo; window.estado.uid = uid; window.estado.nombre = nombre;
+    localStorage.setItem('pc_sesion', JSON.stringify({salaId:codigo, uid, nombre}));
+    onDisconnect(ref(db,'salas_poker/'+codigo+'/jugadores/'+uid+'/conectado')).set(false);
+    mostrarLoading(false);
+    iniciarWizardCartas();
+  };
+
+  // ── UNIRSE ──
+  window.unirseSala = async function(){
+    const codigo = document.getElementById('unirse-codigo').value.trim().toUpperCase();
+    const nombre = document.getElementById('unirse-nombre').value.trim();
+    if(codigo.length!==6){ showToast('Ingresa un código de 6 caracteres'); return; }
+    if(!nombre){ showToast('Escribe tu seudónimo'); return; }
+    mostrarLoading(true);
+    const snap = await get(ref(db,'salas_poker/'+codigo));
+    if(!snap.exists()){ mostrarLoading(false); showToast('No se encontró esa sala'); return; }
+    const sala = snap.val();
+    if(sala.estado!=='esperando'){ mostrarLoading(false); showToast('Esa mesa ya está en juego'); return; }
+    const jugadoresActuales = Object.keys(sala.jugadores||{}).length;
+    if(jugadoresActuales >= sala.jugadoresMax){ mostrarLoading(false); showToast('La mesa ya está completa'); return; }
+    const uid = generarUid();
+    await update(ref(db,'salas_poker/'+codigo+'/jugadores/'+uid), { nombre, listo:false, conectado:true, cartas:[] });
+    window.estado.salaId = codigo; window.estado.uid = uid; window.estado.nombre = nombre;
+    window.estado.jugadoresMax = sala.jugadoresMax; window.estado.cartasPorJugador = sala.cartasPorJugador; window.estado.limiteCarta = sala.limiteCarta;
+    window.estado.fichaConfig = sala.fichaConfig; window.estado.nivelIntervencion = sala.nivelIntervencion;
+    localStorage.setItem('pc_sesion', JSON.stringify({salaId:codigo, uid, nombre}));
+    onDisconnect(ref(db,'salas_poker/'+codigo+'/jugadores/'+uid+'/conectado')).set(false);
+    mostrarLoading(false);
+    iniciarWizardCartas();
+  };
+
+  // ── WIZARD DE CARTAS ──
+  function iniciarWizardCartas(){
+    cartaActual = 0;
+    cartas = Array.from({length:window.estado.cartasPorJugador}, ()=>({titulo:'', argumento:''}));
+    renderCarta();
+    irA('screen-cartas');
+  }
+
+  function renderCarta(){
+    const total = window.estado.cartasPorJugador;
+    document.getElementById('cartas-header-title').textContent = 'Tu carta '+(cartaActual+1)+' de '+total;
+    document.getElementById('cartas-header-tag').textContent = window.estado.nombre;
+    document.getElementById('carta-corner').textContent = (cartaActual+1)+'/'+total;
+    document.getElementById('carta-suit').textContent = SUITS[cartaActual % SUITS.length];
+    document.getElementById('carta-titulo').value = cartas[cartaActual].titulo;
+    document.getElementById('carta-argumento').value = cartas[cartaActual].argumento;
+    document.getElementById('carta-btn-atras').style.visibility = cartaActual===0 ? 'hidden' : 'visible';
+    document.getElementById('carta-btn-siguiente').textContent = (cartaActual===total-1) ? 'Sentarme a la mesa' : 'Siguiente';
+    const prog = document.getElementById('carta-progreso');
+    prog.innerHTML = Array.from({length:total},(_,i)=>
+      '<div class="carta-dot '+(i<cartaActual?'done':(i===cartaActual?'actual':''))+'"></div>'
+    ).join('');
+    actualizarContadorCarta();
+  }
+
+  window.actualizarContadorCarta = function(){
+    const titulo = document.getElementById('carta-titulo').value;
+    const arg = document.getElementById('carta-argumento').value;
+    const n = titulo.length + arg.length;
+    const min = 80, max = window.estado.limiteCarta;
+    const cnt = document.getElementById('carta-counter');
+    cnt.textContent = n+' / '+max+' (mínimo '+min+')';
+    cnt.className = 'carta-counter';
+    const btn = document.getElementById('carta-btn-siguiente');
+    if(n < min){ cnt.classList.add('warn'); btn.disabled = true; }
+    else if(n > max){ cnt.classList.add('over'); btn.disabled = true; }
+    else { cnt.classList.add('ok'); btn.disabled = !(titulo.trim() && arg.trim()); }
+  };
+
+  window.cartaAtras = function(){
+    if(cartaActual===0) return;
+    cartas[cartaActual] = { titulo: document.getElementById('carta-titulo').value, argumento: document.getElementById('carta-argumento').value };
+    cartaActual--;
+    renderCarta();
+  };
+
+  window.cartaSiguiente = async function(){
+    cartas[cartaActual] = { titulo: document.getElementById('carta-titulo').value.trim(), argumento: document.getElementById('carta-argumento').value.trim() };
+    if(cartaActual < window.estado.cartasPorJugador - 1){
+      cartaActual++;
+      renderCarta();
+    } else {
+      mostrarLoading(true);
+      await update(ref(db,'salas_poker/'+window.estado.salaId+'/jugadores/'+window.estado.uid), { cartas, listo:true });
+      mostrarLoading(false);
+      irA('screen-espera');
+      cargarEspera();
+    }
+  };
+
+  // ── SALA DE ESPERA ──
+  function cargarEspera(){
+    document.getElementById('espera-codigo').textContent = window.estado.salaId;
+    onValue(ref(db,'salas_poker/'+window.estado.salaId), snap=>{
+      if(!snap.exists()) return;
+      const sala = snap.val();
+      salaActual = sala;
+      document.getElementById('espera-config').textContent =
+        sala.jugadoresMax+' jugadores · '+sala.cartasPorJugador+' carta(s) c/u · '+sala.minCarta+'–'+sala.limiteCarta+' caracteres';
+      const jugadores = sala.jugadores||{};
+      const lista = document.getElementById('mesa-lista');
+      lista.innerHTML = Object.entries(jugadores).map(([uid,j])=>{
+        const esHost = uid===sala.host;
+        const esYo = uid===window.estado.uid;
+        return '<div class="jugador-row">'
+          +'<div class="jugador-punto '+(j.conectado?'on':'')+'"></div>'
+          +'<div class="jugador-nombre">'+j.nombre+(esYo?' (tú)':'')+'</div>'
+          +(esHost?'<div class="jugador-tag">ANFITRIÓN</div>':'')
+          +'<div class="jugador-listo '+(j.listo?'si':'')+'">'+(j.listo?'Listo':'Escribiendo...')+'</div>'
+          +'</div>';
+      }).join('');
+
+      // ¿Mostrar botón de iniciar? Solo al anfitrión, mesa completa, todos listos, aún no iniciada.
+      const soyHost = window.estado.uid === sala.host;
+      const total = Object.keys(jugadores).length;
+      const todosListos = total>0 && Object.values(jugadores).every(j=>j.listo);
+      const mesaCompleta = total >= sala.jugadoresMax;
+      const wrap = document.getElementById('btn-iniciar-wrap');
+      if(soyHost && mesaCompleta && todosListos && sala.estado==='esperando'){
+        wrap.style.display='block';
+        document.getElementById('btn-iniciar-partida').disabled=false;
+      } else {
+        wrap.style.display = soyHost ? 'block' : 'none';
+        document.getElementById('btn-iniciar-partida').disabled = true;
+        document.getElementById('btn-iniciar-partida').textContent = !mesaCompleta
+          ? 'Esperando jugadores ('+total+'/'+sala.jugadoresMax+')'
+          : (!todosListos ? 'Esperando cartas de todos' : 'INICIAR PARTIDA');
+      }
+      if(mesaCompleta && todosListos && sala.estado==='esperando'){
+        document.getElementById('btn-iniciar-partida').textContent='INICIAR PARTIDA';
+      }
+
+      // Ruteo automático según el estado real de la sala
+      if(sala.estado==='gracia' && pantallaJuegoMostrada!=='gracia'){
+        pantallaJuegoMostrada='gracia';
+        mostrarGracia(sala);
+      } else if(sala.estado==='arena'){
+        if(pantallaJuegoMostrada!=='arena'){ pantallaJuegoMostrada='arena'; irA('screen-arena'); if(graciaTimer){clearInterval(graciaTimer);graciaTimer=null;} }
+        renderArena(sala);
+      }
+    });
+  }
+
+  // ── INICIAR PARTIDA (fusiona el mazo y sortea la carta, protegido por transacción) ──
+  window.iniciarPartida = async function(){
+    if(!salaActual) return;
+    const codigo = window.estado.salaId;
+    mostrarLoading(true);
+    const jugadores = salaActual.jugadores||{};
+    const mazo = [];
+    Object.entries(jugadores).forEach(([uid,j])=>{
+      (j.cartas||[]).forEach(c=> mazo.push({titulo:c.titulo, argumento:c.argumento, autorUid:uid, autorNombre:j.nombre}));
+    });
+    if(mazo.length===0){ mostrarLoading(false); showToast('No hay cartas en la mesa todavía'); return; }
+    const cartaElegida = mazo[Math.floor(Math.random()*mazo.length)];
+    const fc = salaActual.fichaConfig || {intervencion:4, salto:1};
+    const fichas = {};
+    Object.keys(jugadores).forEach(uid=>{ fichas[uid] = { intervencion:fc.intervencion, salto:fc.salto }; });
+
+    // runTransaction: solo el primer dispositivo que llegue aquí "gana" el sorteo.
+    // Si dos anfitriones (o reintentos) llaman a esto casi a la vez, Firebase descarta el segundo intento.
+    await runTransaction(ref(db,'salas_poker/'+codigo+'/partida'), actual=>{
+      if(actual !== null) return; // ya existe una partida iniciada: no la pisamos
+      return { cartaElegida, fichas, graciaIniciadaEn: Date.now(), graciaDuracion:60 };
+    });
+    await update(ref(db,'salas_poker/'+codigo), { estado:'gracia' });
+    mostrarLoading(false);
+  };
+
+  // ── MINUTO DE GRACIA ──
+  function mostrarGracia(sala){
+    const p = sala.partida;
+    if(!p){ return; }
+    document.getElementById('gracia-autor').textContent = 'Carta de '+p.cartaElegida.autorNombre;
+    document.getElementById('gracia-titulo').textContent = p.cartaElegida.titulo;
+    document.getElementById('gracia-arg').textContent = p.cartaElegida.argumento;
+    irA('screen-gracia');
+
+    if(graciaTimer) clearInterval(graciaTimer);
+    function tick(){
+      const transcurrido = Math.floor((Date.now() - p.graciaIniciadaEn)/1000);
+      const restante = Math.max(0, p.graciaDuracion - transcurrido);
+      const reloj = document.getElementById('gracia-reloj');
+      reloj.textContent = restante;
+      reloj.className = 'gracia-reloj'+(restante<=10?' urgente':'');
+      if(restante<=0){
+        clearInterval(graciaTimer);
+        // Cualquier cliente puede marcar el paso a 'arena'; si varios lo intentan a la vez, la última escritura es inofensiva (mismo valor).
+        if(window.estado.uid===sala.host){
+          update(ref(db,'salas_poker/'+window.estado.salaId), { estado:'arena' }).catch(()=>{});
+        }
+      }
+    }
+    tick();
+    graciaTimer = setInterval(tick, 1000);
+  }
+
+  // ── ARENA: render principal, llamado en cada actualización de la sala ──
+  function renderArena(sala){
+    const p = sala.partida;
+    if(!p) return;
+    const codigo = window.estado.salaId;
+    const jugadores = sala.jugadores||{};
+    const fichas = p.fichas||{};
+
+    document.getElementById('arena-tema-titulo').textContent = p.cartaElegida.titulo;
+    document.getElementById('arena-tema-autor').textContent = 'Carta de '+p.cartaElegida.autorNombre;
+
+    // Tarjetas de jugadores con sus fichas
+    const cont = document.getElementById('arena-jugadores');
+    cont.innerHTML = Object.entries(jugadores).map(([uid,j])=>{
+      const f = fichas[uid]||{intervencion:0,salto:0};
+      const activo = p.turno && p.turno.jugadorUid===uid;
+      return '<div class="arena-jug-card'+(activo?' activo':'')+'">'
+        +'<div class="arena-jug-nombre">'+j.nombre+(uid===window.estado.uid?' (tú)':'')+'</div>'
+        +'<div class="arena-jug-fichas"><b>'+f.intervencion+'</b>interv <b>'+f.salto+'</b>salto</div></div>';
+    }).join('');
+
+    // ── Fin de partida (Sequía o Monólogo imposible) — detección básica, cierre completo llega después ──
+    const totalIntervencion = Object.values(fichas).reduce((a,f)=>a+f.intervencion,0);
+    const conFichas = Object.values(fichas).filter(f=>f.intervencion>0).length;
+    const finBanner = document.getElementById('fin-banner-cont');
+    const terminada = totalIntervencion===0 || conFichas<=1;
+    if(terminada){
+      finBanner.innerHTML = '<div class="fin-banner">'+(totalIntervencion===0?'La mesa se quedó sin fichas de intervención (Sequía).':'Solo queda un jugador con fichas (Monólogo imposible).')+' El cierre y la exportación llegan en el siguiente paso.</div>';
+    } else {
+      finBanner.innerHTML='';
+    }
+
+    renderHistorial(p, jugadores);
+
+    if(terminada){
+      document.getElementById('turno-banner').textContent = 'Partida detenida — a la espera del cierre (próximo paso)';
+      document.getElementById('compose-wrap').innerHTML = '';
+      return;
+    }
+
+    // ── Sorteo del turno si todavía no existe ──
+    if(!p.turno){
+      const elegibles = Object.keys(jugadores).filter(uid=>(fichas[uid]||{}).intervencion>0);
+      if(elegibles.length>0){
+        const elegido = elegibles[Math.floor(Math.random()*elegibles.length)];
+        runTransaction(ref(db,'salas_poker/'+codigo+'/partida/turno'), actual=>{
+          if(actual !== null) return; // ya lo sorteó otro dispositivo
+          return { jugadorUid:elegido, iniciadoEn:Date.now(), numero:1, duracionSeg:(sala.nivelIntervencion||{}).tiempoSeg||240 };
+        });
+      }
+      document.getElementById('turno-banner').textContent = 'Sorteando quién abre la mesa...';
+      document.getElementById('compose-wrap').innerHTML = '';
+      return;
+    }
+
+    const turno = p.turno;
+    const esMiTurno = turno.jugadorUid === window.estado.uid;
+    const nombreTurno = (jugadores[turno.jugadorUid]||{}).nombre || '—';
+    const banner = document.getElementById('turno-banner');
+    banner.textContent = esMiTurno ? 'Es tu turno de intervenir' : 'Turno de '+nombreTurno+'...';
+    banner.className = 'turno-banner'+(esMiTurno?' mio':'');
+
+    if(ultimoTurnoUid !== turno.jugadorUid+'-'+turno.numero){
+      ultimoTurnoUid = turno.jugadorUid+'-'+turno.numero;
+      composeBloques = esMiTurno ? [{cita:null, respuesta:''}] : [];
+      turnoTimeoutEjecutado = null;
+      iniciarRelojTurno(sala, turno, esMiTurno, fichas);
+    }
+
+    renderCompose(sala, p, jugadores, fichas, turno, esMiTurno);
+  }
+
+  // ── CRONÓMETRO VISIBLE DEL TURNO (y timeout automático) ──
+  function iniciarRelojTurno(sala, turno, esMiTurno, fichas){
+    if(turnoTimerUI) clearInterval(turnoTimerUI);
+    const duracion = turno.duracionSeg || 240;
+    function tick(){
+      const transcurrido = Math.floor((Date.now() - turno.iniciadoEn)/1000);
+      const restante = duracion - transcurrido;
+      const reloj = document.getElementById('turno-reloj');
+      if(reloj){
+        const mm = Math.floor(Math.max(0,restante)/60), ss = Math.max(0,restante)%60;
+        reloj.textContent = mm+':'+String(ss).padStart(2,'0');
+        reloj.className = 'turno-reloj'+(restante<=15?' urgente':'');
+      }
+      if(restante<=0 && esMiTurno && turnoTimeoutEjecutado!==ultimoTurnoUid){
+        turnoTimeoutEjecutado = ultimoTurnoUid;
+        clearInterval(turnoTimerUI);
+        ejecutarTimeoutDeMiTurno(fichas);
+      }
+      // Red de seguridad: si a quien le tocaba se quedó sin conexión y nunca resolvió su turno,
+      // cualquier otro dispositivo conectado puede forzar que pierda el turno tras un margen extra.
+      if(restante <= -10 && !esMiTurno && turnoTimeoutEjecutado!==ultimoTurnoUid){
+        turnoTimeoutEjecutado = ultimoTurnoUid;
+        clearInterval(turnoTimerUI);
+        forzarTimeoutAjeno(sala, turno);
+      }
+    }
+    tick();
+    turnoTimerUI = setInterval(tick, 1000);
+  }
+
+  // Cuando se me acaba mi propio tiempo: publico lo que tenga escrito, o salto si no escribí nada.
+  async function ejecutarTimeoutDeMiTurno(fichas){
+    const hayTexto = composeBloques.some(b=>b.respuesta.trim().length>0);
+    const misFichas = fichas[window.estado.uid]||{intervencion:0,salto:0};
+    if(hayTexto){
+      await enviarTurno();
+    } else if(misFichas.salto>0){
+      await saltarTurno();
+    } else {
+      // No escribió nada y ya no tiene fichas de salto: pierde el turno igual, consumiendo 1 ficha de intervención.
+      const codigo = window.estado.salaId;
+      const sala = salaActual, p = sala.partida, turno = p.turno;
+      mostrarLoading(true);
+      const msgRef = ref(db,'salas_poker/'+codigo+'/partida/mensajes/m'+Date.now());
+      await set(msgRef, { sistema:true, texto: window.estado.nombre+' perdió su turno por tiempo (sin fichas de salto).', timestamp: Date.now() });
+      await update(ref(db,'salas_poker/'+codigo+'/partida/fichas/'+window.estado.uid), { intervencion: Math.max(0,misFichas.intervencion-1) });
+      await pasarTurno(codigo, sala, turno);
+      mostrarLoading(false);
+    }
+  }
+
+  // Red de seguridad si el jugador activo se desconectó y no resolvió su turno a tiempo.
+  async function forzarTimeoutAjeno(sala, turnoVencido){
+    const codigo = window.estado.salaId;
+    // Transacción: solo el primer dispositivo que detecte el vencimiento ejecuta el salto forzado.
+    const resultado = await runTransaction(ref(db,'salas_poker/'+codigo+'/partida/turno'), actual=>{
+      if(!actual || actual.jugadorUid!==turnoVencido.jugadorUid || actual.numero!==turnoVencido.numero) return; // ya cambió, no hacer nada
+      actual._forzando = true;
+      return actual;
+    });
+    if(!resultado.committed) return;
+    const uidAusente = turnoVencido.jugadorUid;
+    const nombreAusente = (sala.jugadores[uidAusente]||{}).nombre || 'Ese jugador';
+    const msgRef = ref(db,'salas_poker/'+codigo+'/partida/mensajes/m'+Date.now());
+    await set(msgRef, { sistema:true, texto: nombreAusente+' no respondió a tiempo (desconexión) y perdió el turno.', timestamp: Date.now() });
+    const snapFichas = await get(ref(db,'salas_poker/'+codigo+'/partida/fichas'));
+    const fichas = snapFichas.val()||{};
+    const f = fichas[uidAusente]||{intervencion:0,salto:0};
+    await update(ref(db,'salas_poker/'+codigo+'/partida/fichas/'+uidAusente), { intervencion: Math.max(0,f.intervencion-1) });
+    await pasarTurno(codigo, sala, turnoVencido);
+  }
+
+  // ── HISTORIAL DE MENSAJES ──
+  function renderHistorial(p, jugadores){
+    const cont = document.getElementById('historial-mensajes');
+    const mensajes = p.mensajes ? Object.entries(p.mensajes) : [];
+    mensajes.sort((a,b)=> a[1].timestamp - b[1].timestamp);
+    cont.innerHTML = mensajes.map(([id,m])=>{
+      if(m.sistema){
+        return '<div class="msg-card sistema">'+m.texto+'</div>';
+      }
+      const bloques = (m.bloques||[]).map(b=>{
+        let html='';
+        if(b.cita){
+          html += '<div class="msg-cita"><span class="msg-cita-autor">Citando a '+b.cita.autor+'</span>'+escapeHtml(b.cita.texto)+'</div>';
+        }
+        html += '<div class="msg-respuesta">'+escapeHtml(b.respuesta)+'</div>';
+        return '<div class="msg-bloque" data-msgid="'+id+'">'+html+'</div>';
+      }).join('');
+      const seg = Math.round(m.tiempoMs/1000);
+      return '<div class="msg-card msg-selectable" data-msgid="'+id+'" data-autor="'+escapeAttr(m.autorNombre)+'">'
+        +'<div class="msg-head"><span class="msg-autor">'+m.autorNombre+'</span><span class="msg-meta">respondió en '+seg+'s · '+m.caracteres+' car.</span></div>'
+        +bloques+'</div>';
+    }).join('') || '<div class="arena-pendiente">Todavía no hay intervenciones. Cuando alguien juegue su turno, aparecerá aquí.</div>';
+    // Scroll al fondo solo si llegaron mensajes nuevos
+    if(mensajes.length !== mensajesRenderizados){
+      mensajesRenderizados = mensajes.length;
+      cont.scrollTop = cont.scrollHeight;
+    }
+  }
+  function escapeHtml(s){ return (s||'').replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+  function escapeAttr(s){ return (s||'').replace(/"/g,'&quot;'); }
+
+  // ── CITAR: selección de texto dentro del historial ──
+  document.getElementById('historial-mensajes').addEventListener('mouseup', mostrarBotonCitar);
+  document.getElementById('historial-mensajes').addEventListener('touchend', ()=>setTimeout(mostrarBotonCitar,50));
+  function mostrarBotonCitar(){
+    const sel = window.getSelection();
+    const texto = sel.toString().trim();
+    const btn = document.getElementById('citar-flotante');
+    if(!texto || texto.length>400){ btn.style.display='none'; return; }
+    let nodo = sel.anchorNode;
+    while(nodo && !(nodo.dataset && nodo.dataset.autor)) nodo = nodo.parentNode;
+    if(!nodo){ btn.style.display='none'; return; }
+    const autor = nodo.dataset.autor;
+    try{
+      const rango = sel.getRangeAt(0).getBoundingClientRect();
+      btn.style.left = Math.max(10, rango.left)+'px';
+      btn.style.top = (rango.top - 42 + window.scrollY)+'px';
+    }catch(e){}
+    btn.style.display='block';
+    btn.onclick = function(){
+      composeBloques.push({ cita:{texto, autor}, respuesta:'' });
+      btn.style.display='none';
+      sel.removeAllRanges();
+      renderArena(salaActual);
+    };
+  }
+
+  // ── COMPOSE (escribir la intervención, con bloques de cita+respuesta) ──
+  function renderCompose(sala, p, jugadores, fichas, turno, esMiTurno){
+    const wrap = document.getElementById('compose-wrap');
+    if(!esMiTurno){
+      const misFichas = fichas[window.estado.uid]||{intervencion:0,salto:0};
+      wrap.innerHTML = '<div class="compose-espera">Esperando la intervención de otro jugador. Tus fichas: '+misFichas.intervencion+' intervención, '+misFichas.salto+' salto.</div>';
+      return;
+    }
+    const nivel = sala.nivelIntervencion || {caracteres:650};
+    const misFichas = fichas[window.estado.uid]||{intervencion:0,salto:0};
+    const totalTexto = composeBloques.reduce((a,b)=>a+b.respuesta.length,0);
+
+    let html = composeBloques.map((b,i)=>{
+      let citaHtml = '';
+      if(b.cita){
+        citaHtml = '<div class="compose-cita"><span class="compose-cita-autor">Citando a '+b.cita.autor+'</span>'+escapeHtml(b.cita.texto)
+          +'<span class="compose-cita-quitar" onclick="quitarBloque('+i+')">quitar</span></div>';
+      }
+      return '<div class="compose-bloque">'+citaHtml
+        +'<textarea class="compose-textarea" placeholder="'+(b.cita?'Responde a esta cita...':'Escribe tu intervención...')+'" data-idx="'+i+'" oninput="actualizarBloque(this)">'+escapeHtml(b.respuesta)+'</textarea></div>';
+    }).join('');
+
+    const cls = totalTexto>nivel.caracteres ? 'over' : (totalTexto>nivel.caracteres*0.85 ? 'warn' : '');
+    html += '<div class="compose-counter '+cls+'" id="compose-counter">'+totalTexto+' / '+nivel.caracteres+' caracteres</div>';
+    html += '<div class="compose-botones">'
+      + '<button class="btn-ghost" id="btn-saltar" onclick="saltarTurno()" '+(misFichas.salto<=0?'style="display:none;"':'')+'>SALTAR ('+misFichas.salto+')</button>'
+      + '<button class="btn-primary" id="btn-jugar" onclick="enviarTurno()">JUGAR</button>'
+      + '</div>';
+    wrap.innerHTML = html;
+
+    const puedeEnviar = totalTexto>0 && totalTexto<=nivel.caracteres;
+    document.getElementById('btn-jugar').disabled = !puedeEnviar;
+  }
+
+  // Se ejecuta en cada letra que escribes. A propósito NO reconstruye el HTML del cuadro de texto
+  // (eso era lo que causaba que el cursor saltara al inicio y el texto se viera "al revés").
+  // Solo actualiza el contador y el botón, dejando el textarea tal cual está mientras escribes.
+  window.actualizarBloque = function(el){
+    composeBloques[parseInt(el.dataset.idx)].respuesta = el.value;
+    const sala = salaActual;
+    const nivel = (sala && sala.nivelIntervencion) || {caracteres:650};
+    const totalTexto = composeBloques.reduce((a,b)=>a+b.respuesta.length,0);
+    const counter = document.getElementById('compose-counter');
+    if(counter){
+      const cls = totalTexto>nivel.caracteres ? 'over' : (totalTexto>nivel.caracteres*0.85 ? 'warn' : '');
+      counter.className = 'compose-counter '+cls;
+      counter.textContent = totalTexto+' / '+nivel.caracteres+' caracteres';
+    }
+    const btn = document.getElementById('btn-jugar');
+    if(btn){ btn.disabled = !(totalTexto>0 && totalTexto<=nivel.caracteres); }
+  };
+  window.quitarBloque = function(i){
+    composeBloques.splice(i,1);
+    if(composeBloques.length===0) composeBloques=[{cita:null,respuesta:''}];
+    renderArena(salaActual);
+  };
+
+  window.enviarTurno = async function(){
+    const codigo = window.estado.salaId;
+    const sala = salaActual, p = sala.partida, turno = p.turno;
+    const bloques = composeBloques.filter(b=>b.respuesta.trim().length>0);
+    if(bloques.length===0) return;
+    const caracteres = bloques.reduce((a,b)=>a+b.respuesta.length,0);
+    const tiempoMs = Date.now() - turno.iniciadoEn;
+    mostrarLoading(true);
+    const msgRef = ref(db,'salas_poker/'+codigo+'/partida/mensajes/m'+Date.now());
+    await set(msgRef, {
+      autorUid: window.estado.uid, autorNombre: window.estado.nombre,
+      bloques, tiempoMs, caracteres, timestamp: Date.now()
+    });
+    await update(ref(db,'salas_poker/'+codigo+'/partida/fichas/'+window.estado.uid), { intervencion: Math.max(0,(p.fichas[window.estado.uid].intervencion-1)) });
+    await pasarTurno(codigo, sala, turno);
+    composeBloques=[];
+    mostrarLoading(false);
+  };
+
+  window.saltarTurno = async function(){
+    const codigo = window.estado.salaId;
+    const sala = salaActual, p = sala.partida, turno = p.turno;
+    const misFichas = p.fichas[window.estado.uid];
+    if(!misFichas || misFichas.salto<=0) return;
+    mostrarLoading(true);
+    await update(ref(db,'salas_poker/'+codigo+'/partida/fichas/'+window.estado.uid), { salto: misFichas.salto-1 });
+    const msgRef = ref(db,'salas_poker/'+codigo+'/partida/mensajes/m'+Date.now());
+    await set(msgRef, { sistema:true, texto: window.estado.nombre+' saltó su turno.', timestamp: Date.now() });
+    await pasarTurno(codigo, sala, turno);
+    mostrarLoading(false);
+  };
+
+  async function pasarTurno(codigo, sala, turnoAnterior){
+    const jugadores = sala.jugadores||{};
+    // fichas actualizadas localmente no están garantizadas frescas; releemos antes de elegir al siguiente
+    const snap = await get(ref(db,'salas_poker/'+codigo+'/partida/fichas'));
+    const fichas = snap.val()||{};
+    const elegibles = Object.keys(jugadores).filter(uid=>(fichas[uid]||{}).intervencion>0);
+    if(elegibles.length===0) return; // fin de partida, se detecta en el próximo render
+    const siguiente = elegibles[Math.floor(Math.random()*elegibles.length)];
+    await update(ref(db,'salas_poker/'+codigo+'/partida'), { turno: { jugadorUid:siguiente, iniciadoEn:Date.now(), numero:(turnoAnterior.numero||0)+1, duracionSeg:(sala.nivelIntervencion||{}).tiempoSeg||240 } });
+  }
+
+  // ── APUNTES FLOTANTES (personales, guardados solo en este dispositivo) ──
+  window.abrirNotas = function(){
+    const key = 'pc_notas_'+window.estado.salaId;
+    document.getElementById('notas-textarea').value = localStorage.getItem(key) || '';
+    document.getElementById('notas-panel').classList.add('show');
+  };
+  window.cerrarNotas = function(){ document.getElementById('notas-panel').classList.remove('show'); };
+  window.guardarNotas = function(){
+    const key = 'pc_notas_'+window.estado.salaId;
+    localStorage.setItem(key, document.getElementById('notas-textarea').value);
+  };
+
+  // ── SESIÓN GUARDADA: sin confirm() nativo (poco confiable entre navegadores) ──
+  // En vez de interrumpir con un cuadro del sistema, mostramos botones reales en el Hub.
+  async function revisarSesionGuardada(){
+    const s = localStorage.getItem('pc_sesion'); if(!s){ debugLog('No hay sesión guardada'); return; }
+    try{
+      const {salaId, uid, nombre} = JSON.parse(s);
+      debugLog('Sesión encontrada: sala '+salaId+', uid '+uid);
+      const snap = await get(ref(db,'salas_poker/'+salaId));
+      if(!snap.exists() || !snap.val().jugadores || !snap.val().jugadores[uid]){
+        debugLog('La sala ya no existe o mi jugador ya no está — se borra la sesión guardada');
+        localStorage.removeItem('pc_sesion'); return;
+      }
+      window._sesionGuardada = { salaId, uid, nombre, sala: snap.val() };
+      document.getElementById('sesion-codigo').textContent = salaId;
+      document.getElementById('sesion-activa').style.display='block';
+      debugLog('Botón "Volver a mi mesa" visible y listo');
+    }catch(e){ debugLog('ERROR revisando sesión: '+e.message); localStorage.removeItem('pc_sesion'); }
+  }
+
+  window.volverAMiMesa = function(){
+    debugLog('Tocaste "Volver a mi mesa"');
+    const d = window._sesionGuardada;
+    if(!d){ debugLog('No hay datos de sesión guardados en memoria'); showToast('No se pudo recuperar esa mesa'); return; }
+    const {salaId, uid, nombre, sala} = d;
+    debugLog('Sala: '+salaId+' — mi jugador: '+JSON.stringify(sala.jugadores && sala.jugadores[uid]));
+    window.estado.salaId=salaId; window.estado.uid=uid; window.estado.nombre=nombre;
+    window.estado.jugadoresMax=sala.jugadoresMax; window.estado.cartasPorJugador=sala.cartasPorJugador; window.estado.limiteCarta=sala.limiteCarta;
+    window.estado.fichaConfig=sala.fichaConfig; window.estado.nivelIntervencion=sala.nivelIntervencion;
+    try{
+      onDisconnect(ref(db,'salas_poker/'+salaId+'/jugadores/'+uid+'/conectado')).set(false);
+      set(ref(db,'salas_poker/'+salaId+'/jugadores/'+uid+'/conectado'), true).catch(()=>{});
+      if(!sala.jugadores[uid]){
+        debugLog('Mi jugador ya no existe en esta sala — no se puede volver');
+        showToast('Ya no perteneces a esa mesa');
+        return;
+      }
+      if(!sala.jugadores[uid].listo){
+        debugLog('Todavía no había puesto mis cartas — voy al asistente de cartas');
+        iniciarWizardCartas();
+      } else {
+        debugLog('Cartas ya puestas — voy a la sala de espera');
+        irA('screen-espera'); cargarEspera();
+        debugLog('Pantalla cambiada a screen-espera');
+      }
+    }catch(e){ debugLog('ERROR en volverAMiMesa: '+e.message); showToast('Ocurrió un problema al volver — intenta de nuevo'); }
+  };
+
+  window.salirDeMiMesa = async function(){
+    const d = window._sesionGuardada; if(!d) return;
+    mostrarLoading(true);
+    try{
+      // Esto borra tu lugar de verdad en Firebase, para que el cupo quede libre y puedas volver a unirte si quieres.
+      await set(ref(db,'salas_poker/'+d.salaId+'/jugadores/'+d.uid), null);
+    }catch(e){}
+    localStorage.removeItem('pc_sesion');
+    document.getElementById('sesion-activa').style.display='none';
+    mostrarLoading(false);
+    showToast('Saliste de la mesa, tu lugar quedó libre');
+  };
+
+  revisarSesionGuardada();
+</script>
+</body>
+</html>
