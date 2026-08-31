@@ -374,7 +374,6 @@
   let composeBloques = []; // [{cita:{texto,autor}|null, respuesta:''}]
   let ultimoTurnoUid = null; // para saber cuándo cambió el turno y resetear el compose
   let mensajesRenderizados = 0; // para hacer scroll solo cuando llegan nuevos
-  let turnoTimerUI = null;
   let turnoTimeoutEjecutado = null; // evita disparar el timeout más de una vez por turno
 
   window.irA = function(id){
