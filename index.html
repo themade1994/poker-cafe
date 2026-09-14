@@ -6,97 +6,97 @@
 <title>Póker Café</title>
 <style>
   :root{
-    --bg:#0d1b2a; --surface:#162032; --surface2:#1e2d40;
-    --border:#2a3f58; --oro:#d4af37; --oro-dim:#a3841f; --oro-soft:#e8c766;
-    --white:#ffffff; --gray:#8aa0b8; --gray-dim:#4a6070; --danger:#e05c5c;
-    --felt:#0f2a20;
+    --bg:#2c4a68; --surface:#233b54; --surface2:#345670;
+    --border:#3d5975; --guinda:#a83e57; --guinda-dim:#7a2038; --guinda-soft:#c14f68;
+    --white:#ffffff; --gray:#a9c0d6; --gray-dim:#5d7690; --danger:#e05c5c;
+    --verde:#5c8a63; --felt:#16324a;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html,body{min-height:100vh;background:var(--bg);color:var(--white);font-family:'Georgia',serif;-webkit-font-smoothing:antialiased;}
   .screen{display:none;min-height:100vh;min-height:100dvh;flex-direction:column;}
   .screen.active{display:flex;}
-  .felt{background:radial-gradient(ellipse at top,#12352a 0%,var(--felt) 55%,var(--bg) 100%);}
+  .felt{background:radial-gradient(ellipse at top,#1d4562 0%,var(--felt) 55%,var(--bg) 100%);}
 
   .header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;}
-  .header-back{background:none;border:none;color:var(--oro);font-size:1.4rem;cursor:pointer;padding:0 8px 0 0;}
+  .header-back{background:none;border:none;color:var(--guinda);font-size:1.4rem;cursor:pointer;padding:0 8px 0 0;}
   .header-title{font-size:.92rem;flex:1;color:var(--white);letter-spacing:.02em;}
-  .header-tag{font-size:.65rem;color:var(--oro);font-family:Arial,sans-serif;letter-spacing:.1em;}
+  .header-tag{font-size:.65rem;color:var(--guinda);font-family:Arial,sans-serif;letter-spacing:.1em;}
 
-  .btn-primary{background:var(--oro);color:#1a1400;border:none;padding:15px 28px;font-size:.85rem;letter-spacing:.08em;cursor:pointer;border-radius:8px;font-family:'Georgia',serif;font-weight:bold;width:100%;max-width:340px;transition:background .2s;}
-  .btn-primary:hover{background:var(--oro-soft);}
+  .btn-primary{background:var(--guinda);color:var(--white);border:none;padding:15px 28px;font-size:.85rem;letter-spacing:.08em;cursor:pointer;border-radius:8px;font-family:'Georgia',serif;font-weight:bold;width:100%;max-width:340px;transition:background .2s;}
+  .btn-primary:hover{background:var(--guinda-soft);}
   .btn-primary:disabled{background:var(--gray-dim);color:var(--gray);cursor:not-allowed;opacity:.6;}
-  .btn-secondary{background:none;border:2px solid var(--oro);color:var(--oro);padding:13px 28px;font-size:.85rem;letter-spacing:.08em;cursor:pointer;border-radius:8px;font-family:'Georgia',serif;width:100%;max-width:340px;}
+  .btn-secondary{background:none;border:2px solid var(--guinda);color:var(--guinda);padding:13px 28px;font-size:.85rem;letter-spacing:.08em;cursor:pointer;border-radius:8px;font-family:'Georgia',serif;width:100%;max-width:340px;}
   .btn-ghost{background:none;border:1px solid var(--border);color:var(--gray);padding:12px 24px;font-size:.8rem;cursor:pointer;border-radius:8px;font-family:'Georgia',serif;width:100%;max-width:340px;}
 
-  .hub-suit{font-size:2.6rem;color:var(--oro);margin-bottom:6px;letter-spacing:.2em;}
+  .hub-suit{font-size:2.6rem;color:var(--guinda);margin-bottom:6px;letter-spacing:.2em;}
   .hub-titulo{font-size:2rem;color:var(--white);margin-bottom:4px;letter-spacing:.02em;}
-  .hub-titulo span{color:var(--oro);}
+  .hub-titulo span{color:var(--guinda);}
   .hub-sub{font-size:.85rem;color:var(--gray);font-style:italic;margin-bottom:44px;max-width:300px;line-height:1.6;}
 
   .form-body{flex:1;padding:24px 20px;overflow-y:auto;}
   .form-group{margin-bottom:22px;}
-  .form-label{display:block;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--oro);margin-bottom:9px;font-family:Arial,sans-serif;}
+  .form-label{display:block;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--guinda);margin-bottom:9px;font-family:Arial,sans-serif;}
   .form-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--white);font-family:'Georgia',serif;font-size:.95rem;outline:none;}
-  .form-input:focus{border-color:var(--oro);}
+  .form-input:focus{border-color:var(--guinda);}
   .form-input::placeholder{color:var(--gray-dim);font-style:italic;}
   .chip-select{display:flex;gap:8px;}
   .chip-opt{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 8px;text-align:center;cursor:pointer;font-family:Arial,sans-serif;font-size:.85rem;color:var(--gray);}
-  .chip-opt.sel{border-color:var(--oro);color:var(--oro);background:rgba(212,175,55,.08);font-weight:bold;}
+  .chip-opt.sel{border-color:var(--guinda);color:var(--guinda);background:rgba(168,62,87,.08);font-weight:bold;}
   .form-footer{padding:16px 20px 36px;display:flex;flex-direction:column;gap:10px;align-items:center;}
 
   /* CARTA (wizard) */
   .carta-wrap{flex:1;display:flex;flex-direction:column;align-items:center;padding:22px 18px;}
   .carta-panel{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 20px 18px;position:relative;box-shadow:0 8px 30px rgba(0,0,0,.35);}
-  .carta-corner{position:absolute;top:14px;left:16px;font-family:Arial,sans-serif;font-size:.72rem;color:var(--oro);letter-spacing:.05em;}
-  .carta-suit{position:absolute;top:12px;right:18px;font-size:1.3rem;color:var(--oro-dim);opacity:.8;}
-  .carta-titulo-lbl{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--oro);margin:26px 0 8px;font-family:Arial,sans-serif;}
+  .carta-corner{position:absolute;top:14px;left:16px;font-family:Arial,sans-serif;font-size:.72rem;color:var(--guinda);letter-spacing:.05em;}
+  .carta-suit{position:absolute;top:12px;right:18px;font-size:1.3rem;color:var(--guinda-dim);opacity:.8;}
+  .carta-titulo-lbl{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--guinda);margin:26px 0 8px;font-family:Arial,sans-serif;}
   .carta-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--white);font-family:'Georgia',serif;font-size:.98rem;outline:none;margin-bottom:16px;}
-  .carta-input:focus{border-color:var(--oro);}
+  .carta-input:focus{border-color:var(--guinda);}
   .carta-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;color:var(--white);font-family:'Georgia',serif;font-size:.9rem;line-height:1.65;outline:none;resize:vertical;min-height:120px;text-align:justify;}
-  .carta-textarea:focus{border-color:var(--oro);}
+  .carta-textarea:focus{border-color:var(--guinda);}
   .carta-counter{text-align:right;font-size:.68rem;color:var(--gray-dim);margin-top:6px;font-family:Arial,sans-serif;}
-  .carta-counter.ok{color:#4caf7d;}
+  .carta-counter.ok{color:var(--verde);}
   .carta-counter.warn{color:#f0a500;}
   .carta-counter.over{color:var(--danger);}
   .carta-progreso{display:flex;gap:6px;margin:18px 0 4px;}
   .carta-dot{flex:1;height:4px;border-radius:2px;background:var(--border);}
-  .carta-dot.done{background:var(--oro);}
-  .carta-dot.actual{background:var(--oro-soft);}
+  .carta-dot.done{background:var(--guinda);}
+  .carta-dot.actual{background:var(--guinda-soft);}
   .carta-nav{width:100%;max-width:400px;display:flex;gap:10px;margin-top:20px;}
   .carta-nav .btn-primary,.carta-nav .btn-ghost{max-width:none;}
 
   /* CODIGO / ESPERA */
-  .codigo-box{background:var(--surface2);border:2px solid var(--oro);padding:22px 28px;border-radius:10px;margin-bottom:22px;width:100%;max-width:340px;text-align:center;}
+  .codigo-box{background:var(--surface2);border:2px solid var(--guinda);padding:22px 28px;border-radius:10px;margin-bottom:22px;width:100%;max-width:340px;text-align:center;}
   .codigo-label{font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gray);margin-bottom:8px;font-family:Arial,sans-serif;}
-  .codigo-value{font-size:2rem;letter-spacing:.25em;font-weight:bold;color:var(--oro);font-family:Arial,sans-serif;}
-  .codigo-input{font-size:1.8rem;letter-spacing:.3em;text-align:center;background:var(--surface2);border:2px solid var(--border);border-radius:8px;color:var(--oro);width:100%;max-width:300px;padding:14px;font-family:Arial,sans-serif;outline:none;text-transform:uppercase;margin-bottom:16px;}
-  .codigo-input:focus{border-color:var(--oro);}
+  .codigo-value{font-size:2rem;letter-spacing:.25em;font-weight:bold;color:var(--guinda);font-family:Arial,sans-serif;}
+  .codigo-input{font-size:1.8rem;letter-spacing:.3em;text-align:center;background:var(--surface2);border:2px solid var(--border);border-radius:8px;color:var(--guinda);width:100%;max-width:300px;padding:14px;font-family:Arial,sans-serif;outline:none;text-transform:uppercase;margin-bottom:16px;}
+  .codigo-input:focus{border-color:var(--guinda);}
 
   .mesa-lista{width:100%;max-width:360px;margin-bottom:20px;}
   .jugador-row{display:flex;align-items:center;gap:12px;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;}
   .jugador-punto{width:9px;height:9px;border-radius:50%;background:var(--gray-dim);flex-shrink:0;}
-  .jugador-punto.on{background:#4caf7d;}
+  .jugador-punto.on{background:var(--verde);}
   .jugador-nombre{flex:1;font-size:.92rem;color:var(--white);}
-  .jugador-tag{font-size:.65rem;color:var(--oro);font-family:Arial,sans-serif;letter-spacing:.05em;}
+  .jugador-tag{font-size:.65rem;color:var(--guinda);font-family:Arial,sans-serif;letter-spacing:.05em;}
   .jugador-listo{font-size:.65rem;color:var(--gray-dim);font-family:Arial,sans-serif;}
-  .jugador-listo.si{color:#4caf7d;}
+  .jugador-listo.si{color:var(--verde);}
   .espera-nota{font-size:.8rem;color:var(--gray);font-style:italic;text-align:center;margin-bottom:6px;max-width:320px;line-height:1.6;}
   .espera-config{font-size:.68rem;color:var(--gray-dim);font-family:Arial,sans-serif;text-align:center;margin-bottom:24px;}
 
-  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);border:1px solid var(--oro);color:var(--oro);padding:11px 22px;border-radius:30px;font-size:.82rem;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999;font-family:Arial,sans-serif;}
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);border:1px solid var(--guinda);color:var(--guinda);padding:11px 22px;border-radius:30px;font-size:.82rem;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:999;font-family:Arial,sans-serif;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-  #loading{position:fixed;inset:0;background:rgba(13,27,42,.9);display:none;align-items:center;justify-content:center;z-index:500;font-size:.9rem;color:var(--oro);font-style:italic;}
+  #loading{position:fixed;inset:0;background:rgba(13,27,42,.9);display:none;align-items:center;justify-content:center;z-index:500;font-size:.9rem;color:var(--guinda);font-style:italic;}
 
   /* INICIAR PARTIDA (en espera) */
   .btn-iniciar-wrap{width:100%;max-width:360px;margin-top:6px;}
   .espera-mensaje-host{font-size:.72rem;color:var(--gray-dim);text-align:center;font-family:Arial,sans-serif;margin-top:10px;line-height:1.5;}
 
   /* MINUTO DE GRACIA */
-  .gracia-reloj{font-size:3.4rem;color:var(--oro);font-family:Arial,sans-serif;font-weight:bold;letter-spacing:.03em;margin-bottom:6px;}
+  .gracia-reloj{font-size:3.4rem;color:var(--guinda);font-family:Arial,sans-serif;font-weight:bold;letter-spacing:.03em;margin-bottom:6px;}
   .gracia-reloj.urgente{color:var(--danger);}
   .gracia-lbl{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gray);margin-bottom:30px;font-family:Arial,sans-serif;}
   .gracia-carta{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:26px 22px;box-shadow:0 8px 30px rgba(0,0,0,.35);}
-  .gracia-autor{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--oro);margin-bottom:10px;font-family:Arial,sans-serif;}
+  .gracia-autor{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--guinda);margin-bottom:10px;font-family:Arial,sans-serif;}
   .gracia-titulo{font-size:1.25rem;color:var(--white);margin-bottom:14px;line-height:1.4;}
   .gracia-arg{font-size:.92rem;color:var(--gray);line-height:1.7;text-align:justify;}
   .gracia-nota{font-size:.75rem;color:var(--gray-dim);font-style:italic;text-align:center;margin-top:26px;max-width:320px;line-height:1.6;}
@@ -104,41 +104,41 @@
   /* ARENA (placeholder paso 2) */
   .arena-tema{width:100%;background:var(--surface);border-bottom:1px solid var(--border);padding:16px 20px;text-align:center;position:sticky;top:0;z-index:5;}
   .arena-tema-titulo{font-size:1.05rem;color:var(--white);margin-bottom:4px;}
-  .arena-tema-autor{font-size:.65rem;color:var(--oro);font-family:Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;}
+  .arena-tema-autor{font-size:.65rem;color:var(--guinda);font-family:Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;}
   .arena-jugadores{padding:14px 20px;display:flex;gap:8px;overflow-x:auto;}
   .arena-jug-card{flex-shrink:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 14px;text-align:center;}
-  .arena-jug-card.activo{border-color:var(--oro);background:rgba(212,175,55,.08);}
+  .arena-jug-card.activo{border-color:var(--guinda);background:rgba(168,62,87,.08);}
   .arena-jug-nombre{font-size:.72rem;color:var(--white);margin-bottom:4px;white-space:nowrap;}
   .arena-jug-fichas{display:flex;gap:8px;justify-content:center;font-family:Arial,sans-serif;font-size:.65rem;color:var(--gray);}
-  .arena-jug-fichas b{color:var(--oro);}
+  .arena-jug-fichas b{color:var(--guinda);}
   .arena-pendiente{text-align:center;color:var(--gray-dim);font-style:italic;font-size:.82rem;margin:14px auto;max-width:300px;line-height:1.6;}
 
   .turno-banner{text-align:center;padding:10px 16px;font-size:.8rem;font-family:Arial,sans-serif;color:var(--gray);}
-  .turno-banner.mio{color:var(--oro);font-weight:bold;}
-  .turno-reloj{text-align:center;font-size:1.5rem;font-weight:bold;font-family:Arial,sans-serif;color:var(--oro);margin-bottom:6px;}
+  .turno-banner.mio{color:var(--guinda);font-weight:bold;}
+  .turno-reloj{text-align:center;font-size:1.5rem;font-weight:bold;font-family:Arial,sans-serif;color:var(--guinda);margin-bottom:6px;}
   .turno-reloj.urgente{color:var(--danger);}
 
   .historial{flex:1;padding:10px 16px;overflow-y:auto;}
   .msg-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;}
   .msg-card.sistema{background:transparent;border:none;text-align:center;color:var(--gray-dim);font-style:italic;font-size:.75rem;padding:4px;}
   .msg-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
-  .msg-autor{font-size:.78rem;color:var(--oro);font-weight:bold;}
+  .msg-autor{font-size:.78rem;color:var(--guinda);font-weight:bold;}
   .msg-meta{font-size:.62rem;color:var(--gray-dim);font-family:Arial,sans-serif;}
   .msg-bloque{margin-bottom:10px;}
-  .msg-cita{border-left:3px solid var(--oro-dim);padding:6px 10px;margin-bottom:6px;font-size:.82rem;color:var(--gray);font-style:italic;background:rgba(212,175,55,.05);}
-  .msg-cita-autor{font-size:.6rem;color:var(--oro-dim);font-family:Arial,sans-serif;display:block;margin-bottom:3px;font-style:normal;letter-spacing:.05em;}
+  .msg-cita{border-left:3px solid var(--guinda-dim);padding:6px 10px;margin-bottom:6px;font-size:.82rem;color:var(--gray);font-style:italic;background:rgba(168,62,87,.05);}
+  .msg-cita-autor{font-size:.6rem;color:var(--guinda-dim);font-family:Arial,sans-serif;display:block;margin-bottom:3px;font-style:normal;letter-spacing:.05em;}
   .msg-respuesta{font-size:.9rem;color:var(--white);line-height:1.6;text-align:justify;}
   .msg-selectable{user-select:text;-webkit-user-select:text;}
 
-  .citar-flotante{position:fixed;background:var(--oro);color:#1a1400;padding:8px 16px;border-radius:20px;font-size:.78rem;font-weight:bold;font-family:Arial,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.4);z-index:600;display:none;cursor:pointer;}
+  .citar-flotante{position:fixed;background:var(--guinda);color:var(--white);padding:8px 16px;border-radius:20px;font-size:.78rem;font-weight:bold;font-family:Arial,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.4);z-index:600;display:none;cursor:pointer;}
 
   .compose-wrap{border-top:1px solid var(--border);background:var(--surface);padding:14px 16px 18px;position:sticky;bottom:0;z-index:20;box-shadow:0 -6px 16px rgba(0,0,0,.4);}
   .compose-bloque{margin-bottom:12px;}
-  .compose-cita{border-left:3px solid var(--oro);padding:8px 10px;margin-bottom:6px;font-size:.8rem;color:var(--gray);font-style:italic;background:rgba(212,175,55,.06);border-radius:0 6px 6px 0;position:relative;}
-  .compose-cita-autor{font-size:.6rem;color:var(--oro);font-family:Arial,sans-serif;display:block;margin-bottom:3px;font-style:normal;}
+  .compose-cita{border-left:3px solid var(--guinda);padding:8px 10px;margin-bottom:6px;font-size:.8rem;color:var(--gray);font-style:italic;background:rgba(168,62,87,.06);border-radius:0 6px 6px 0;position:relative;}
+  .compose-cita-autor{font-size:.6rem;color:var(--guinda);font-family:Arial,sans-serif;display:block;margin-bottom:3px;font-style:normal;}
   .compose-cita-quitar{position:absolute;top:6px;right:8px;color:var(--danger);font-size:.7rem;cursor:pointer;font-family:Arial,sans-serif;}
   .compose-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--white);font-family:'Georgia',serif;font-size:.9rem;line-height:1.5;outline:none;resize:vertical;min-height:60px;}
-  .compose-textarea:focus{border-color:var(--oro);}
+  .compose-textarea:focus{border-color:var(--guinda);}
   .compose-counter{text-align:right;font-size:.66rem;color:var(--gray-dim);margin:4px 0 12px;font-family:Arial,sans-serif;}
   .compose-counter.warn{color:#f0a500;}
   .compose-counter.over{color:var(--danger);}
@@ -146,11 +146,11 @@
   .compose-botones .btn-primary,.compose-botones .btn-ghost{max-width:none;padding:12px;font-size:.78rem;}
   .compose-espera{text-align:center;color:var(--gray);font-style:italic;font-size:.85rem;padding:18px;}
 
-  .notas-fab{position:fixed;bottom:20px;right:16px;width:50px;height:50px;border-radius:50%;background:var(--oro);color:#1a1400;border:none;font-size:1.3rem;box-shadow:0 4px 14px rgba(0,0,0,.4);z-index:400;cursor:pointer;}
+  .notas-fab{position:fixed;bottom:20px;right:16px;width:50px;height:50px;border-radius:50%;background:var(--guinda);color:var(--white);border:none;font-size:1.3rem;box-shadow:0 4px 14px rgba(0,0,0,.4);z-index:400;cursor:pointer;}
   .notas-panel{position:fixed;inset:0;background:rgba(13,27,42,.92);z-index:700;display:none;flex-direction:column;padding:20px;}
   .notas-panel.show{display:flex;}
   .notas-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-  .notas-titulo{font-size:.95rem;color:var(--oro);}
+  .notas-titulo{font-size:.95rem;color:var(--guinda);}
   .notas-cerrar{background:none;border:none;color:var(--white);font-size:1.6rem;cursor:pointer;}
   .notas-textarea{flex:1;width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;color:var(--white);font-family:'Georgia',serif;font-size:.92rem;line-height:1.7;outline:none;resize:none;}
   .notas-nota{font-size:.68rem;color:var(--gray-dim);text-align:center;margin-top:10px;font-family:Arial,sans-serif;}
@@ -173,7 +173,7 @@
       <button class="btn-secondary" onclick="irA('screen-unirse')">UNIRME CON CÓDIGO</button>
     </div>
     <div id="sesion-activa" style="display:none;margin-top:24px;width:100%;max-width:340px;">
-      <div style="font-size:.78rem;color:var(--gray);text-align:center;margin-bottom:10px;">Tienes una mesa abierta (código <span id="sesion-codigo" style="color:var(--oro);font-weight:bold;"></span>)</div>
+      <div style="font-size:.78rem;color:var(--gray);text-align:center;margin-bottom:10px;">Tienes una mesa abierta (código <span id="sesion-codigo" style="color:var(--guinda);font-weight:bold;"></span>)</div>
       <button class="btn-primary" onclick="volverAMiMesa()" style="max-width:none;">VOLVER A MI MESA</button>
       <button class="btn-ghost" onclick="salirDeMiMesa()" style="max-width:none;margin-top:8px;">SALIR Y LIBERAR MI LUGAR</button>
     </div>
@@ -232,6 +232,13 @@
         <div class="chip-opt" data-v="3" onclick="seleccionarNivel(this)">Masters<br><span style="font-size:.6rem;opacity:.7;">3000c · 15min</span></div>
       </div>
       <div class="config-warning" id="config-warning">Con esta combinación, la partida puede durar bastante más de una hora si todos agotan su tiempo.</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Moderador de la mesa</label>
+      <div class="chip-select" id="sel-moderador">
+        <div class="chip-opt" data-v="host" onclick="seleccionarModerador(this)">Anfitrión</div>
+        <div class="chip-opt" data-v="azar" onclick="seleccionarModerador(this)">Al azar</div>
+      </div>
     </div>
   </div>
   <div class="form-footer">
@@ -318,6 +325,7 @@
   </div>
   <div class="arena-jugadores" id="arena-jugadores"></div>
   <div id="fin-banner-cont"></div>
+  <div id="apuesta-banner-cont"></div>
   <div class="turno-reloj" id="turno-reloj"></div>
   <div class="turno-banner" id="turno-banner">—</div>
   <div class="historial" id="historial-mensajes"></div>
@@ -330,6 +338,17 @@
     </div>
     <textarea class="notas-textarea" id="notas-textarea" placeholder="Copia aquí lo que quieras citar o recordar mientras esperas tu turno..." oninput="guardarNotas()"></textarea>
     <div class="notas-nota">Solo tú puedes ver estos apuntes — no se comparten con la mesa.</div>
+  </div>
+</div>
+
+<!-- CIERRE DE PARTIDA -->
+<div id="screen-cierre" class="screen felt">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:30px 20px 40px;overflow-y:auto;">
+    <div class="gracia-lbl" style="margin-bottom:10px;">Partida terminada</div>
+    <div class="espera-nota" id="cierre-motivo" style="margin-bottom:22px;">—</div>
+    <div class="mesa-lista" id="cierre-tabla" style="max-width:400px;"></div>
+    <div id="cierre-veredicto-final" style="width:100%;max-width:400px;display:none;margin-top:10px;"></div>
+    <div id="cierre-mod-panel" style="width:100%;max-width:400px;margin-top:14px;"></div>
   </div>
 </div>
 
@@ -357,8 +376,29 @@
   const SUITS = ['♠','♥','♦','♣'];
   window.debugLog = function(){}; // el panel visual ya se quitó; estas llamadas quedan sin efecto
 
+  // Fichas "base" (repartidas al iniciar, uso normal en el turno) vs "acumuladas"
+  // (ganadas en apuestas — bloque futuro). Por ahora las acumuladas empiezan en 0
+  // y el consumo normal de turno siempre descuenta de "base".
+  function totalFicha(f, tipo){
+    const t = (f && f[tipo]) || {base:0, acumulada:0};
+    return (t.base||0) + (t.acumulada||0);
+  }
+  // Descuenta 1 ficha del tipo indicado: primero de "base", y si ya no quedan, de "acumulada".
+  function consumirFicha(f, tipo){
+    const t = (f && f[tipo]) || {base:0, acumulada:0};
+    if((t.base||0) > 0) return { base:t.base-1, acumulada:t.acumulada||0 };
+    return { base:t.base||0, acumulada:Math.max(0,(t.acumulada||0)-1) };
+  }
+  // Descuenta N fichas del mismo tipo (usado al "entrar" a una apuesta igualando la cantidad apostada).
+  function consumirFichas(f, tipo, cantidad){
+    let actual = (f && f[tipo]) || {base:0, acumulada:0};
+    for(let i=0;i<cantidad;i++) actual = consumirFicha({[tipo]:actual}, tipo);
+    return actual;
+  }
+
+
   window.estado = { salaId:null, uid:null, nombre:null, jugadoresMax:3, cartasPorJugador:1, limiteCarta:400,
-    fichaConfig:{intervencion:4, salto:1}, nivelIntervencion:{nombre:'Ágil', caracteres:650, tiempoSeg:120} };
+    fichaConfig:{intervencion:4, salto:1}, nivelIntervencion:{nombre:'Ágil', caracteres:650, tiempoSeg:120}, moderadorModo:'host' };
   const NIVELES = [
     {nombre:'Ágil', caracteres:650, tiempoSeg:120},
     {nombre:'Estándar', caracteres:1200, tiempoSeg:240},
@@ -372,6 +412,8 @@
   let turnoTimerUI = null;
   let pantallaJuegoMostrada = null; // evita re-navegar en cada actualización
   let composeBloques = []; // [{cita:{texto,autor}|null, respuesta:''}]
+  let modoApuesta = false; // true mientras se muestra el formulario de "añadir apuesta" en vez del compose normal
+  let apuestaForm = { pregunta:'', tipo:'intervencion', cantidad:1 };
   let ultimoTurnoUid = null; // para saber cuándo cambió el turno y resetear el compose
   let mensajesRenderizados = 0; // para hacer scroll solo cuando llegan nuevos
   let turnoTimeoutEjecutado = null; // evita disparar el timeout más de una vez por turno
@@ -394,10 +436,16 @@
     el.classList.add('sel');
     window.estado[campo] = parseInt(el.dataset.v);
   };
+  window.seleccionarModerador = function(el){
+    document.querySelectorAll('#sel-moderador .chip-opt').forEach(o=>o.classList.remove('sel'));
+    el.classList.add('sel');
+    window.estado.moderadorModo = el.dataset.v; // 'host' o 'azar'
+  };
   // valores por defecto preseleccionados
   document.getElementById('sel-jugadores').children[0].classList.add('sel');
   document.getElementById('sel-cartas').children[0].classList.add('sel');
   document.getElementById('sel-limite').children[1].classList.add('sel');
+  document.getElementById('sel-moderador').children[0].classList.add('sel'); // por defecto: anfitrión
   document.getElementById('sel-fichas').children[0].classList.add('sel');
   document.getElementById('sel-nivel').children[0].classList.add('sel');
 
@@ -448,6 +496,7 @@
       minCarta: 80,
       fichaConfig: window.estado.fichaConfig,
       nivelIntervencion: window.estado.nivelIntervencion,
+      moderadorModo: window.estado.moderadorModo,
       estado: 'esperando',
       creadoEn: Date.now(),
       jugadores: { [uid]: { nombre, listo:false, conectado:true, cartas:[] } }
@@ -591,7 +640,7 @@
         pantallaJuegoMostrada='gracia';
         mostrarGracia(sala);
       } else if(sala.estado==='arena'){
-        if(pantallaJuegoMostrada!=='arena'){ pantallaJuegoMostrada='arena'; irA('screen-arena'); if(graciaTimer){clearInterval(graciaTimer);graciaTimer=null;} }
+        if(pantallaJuegoMostrada!=='arena' && pantallaJuegoMostrada!=='cierre'){ pantallaJuegoMostrada='arena'; irA('screen-arena'); if(graciaTimer){clearInterval(graciaTimer);graciaTimer=null;} }
         renderArena(sala);
       }
     });
@@ -611,13 +660,17 @@
     const cartaElegida = mazo[Math.floor(Math.random()*mazo.length)];
     const fc = salaActual.fichaConfig || {intervencion:4, salto:1};
     const fichas = {};
-    Object.keys(jugadores).forEach(uid=>{ fichas[uid] = { intervencion:fc.intervencion, salto:fc.salto }; });
+    Object.keys(jugadores).forEach(uid=>{ fichas[uid] = { intervencion:{base:fc.intervencion, acumulada:0}, salto:{base:fc.salto, acumulada:0}, creditos:0 }; });
+    const uidsJugadores = Object.keys(jugadores);
+    const moderadorUid = salaActual.moderadorModo==='azar'
+      ? uidsJugadores[Math.floor(Math.random()*uidsJugadores.length)]
+      : salaActual.host;
 
     // runTransaction: solo el primer dispositivo que llegue aquí "gana" el sorteo.
     // Si dos anfitriones (o reintentos) llaman a esto casi a la vez, Firebase descarta el segundo intento.
     await runTransaction(ref(db,'salas_poker/'+codigo+'/partida'), actual=>{
       if(actual !== null) return; // ya existe una partida iniciada: no la pisamos
-      return { cartaElegida, fichas, graciaIniciadaEn: Date.now(), graciaDuracion:60 };
+      return { cartaElegida, fichas, moderadorUid, graciaIniciadaEn: Date.now(), graciaDuracion:60 };
     });
     await update(ref(db,'salas_poker/'+codigo), { estado:'gracia' });
     mostrarLoading(false);
@@ -665,16 +718,17 @@
     // Tarjetas de jugadores con sus fichas
     const cont = document.getElementById('arena-jugadores');
     cont.innerHTML = Object.entries(jugadores).map(([uid,j])=>{
-      const f = fichas[uid]||{intervencion:0,salto:0};
+      const f = fichas[uid]||{intervencion:{base:0,acumulada:0},salto:{base:0,acumulada:0},creditos:0};
       const activo = p.turno && p.turno.jugadorUid===uid;
+      const esModerador = p.moderadorUid===uid;
       return '<div class="arena-jug-card'+(activo?' activo':'')+'">'
-        +'<div class="arena-jug-nombre">'+j.nombre+(uid===window.estado.uid?' (tú)':'')+'</div>'
-        +'<div class="arena-jug-fichas"><b>'+f.intervencion+'</b>interv <b>'+f.salto+'</b>salto</div></div>';
+        +'<div class="arena-jug-nombre">'+j.nombre+(uid===window.estado.uid?' (tú)':'')+(esModerador?' · MOD':'')+'</div>'
+        +'<div class="arena-jug-fichas"><b>'+totalFicha(f,'intervencion')+'</b>interv <b>'+totalFicha(f,'salto')+'</b>salto'+((f.creditos||0)>0?' <b>'+f.creditos+'</b>créd':'')+'</div></div>';
     }).join('');
 
     // ── Fin de partida (Sequía o Monólogo imposible) — detección básica, cierre completo llega después ──
-    const totalIntervencion = Object.values(fichas).reduce((a,f)=>a+f.intervencion,0);
-    const conFichas = Object.values(fichas).filter(f=>f.intervencion>0).length;
+    const totalIntervencion = Object.values(fichas).reduce((a,f)=>a+totalFicha(f,'intervencion'),0);
+    const conFichas = Object.values(fichas).filter(f=>totalFicha(f,'intervencion')>0).length;
     const finBanner = document.getElementById('fin-banner-cont');
     const terminada = totalIntervencion===0 || conFichas<=1;
     if(terminada){
@@ -685,15 +739,32 @@
 
     renderHistorial(p, jugadores);
 
+    const apuestaBanner = document.getElementById('apuesta-banner-cont');
+    if(p.apuesta && p.apuesta.estado==='abierta'){
+      apuestaBanner.innerHTML = '<div class="fin-banner">⚡ '+p.apuesta.autorNombre+' abrió una apuesta ('+p.apuesta.cantidad+' de '+p.apuesta.tipoFicha+'): "'+escapeHtml(p.apuesta.pregunta)+'"</div>';
+    } else if(p.apuesta && p.apuesta.estado==='resolviendo'){
+      apuestaBanner.innerHTML = '<div class="fin-banner">⏸ Partida en pausa, el moderador está resolviendo la apuesta.</div>';
+    } else if(p.apuesta && p.apuesta.estado==='confirmando'){
+      apuestaBanner.innerHTML = '<div class="fin-banner">✅ El moderador declaró ganador a '+escapeHtml(p.apuesta.veredicto.ganadorNombre)+'. Esperando confirmación de la mesa.</div>';
+    } else {
+      apuestaBanner.innerHTML = '';
+    }
+
     if(terminada){
-      document.getElementById('turno-banner').textContent = 'Partida detenida — a la espera del cierre (próximo paso)';
-      document.getElementById('compose-wrap').innerHTML = '';
+      if(pantallaJuegoMostrada!=='cierre'){
+        pantallaJuegoMostrada='cierre'; irA('screen-cierre');
+        if(turnoTimerUI){ clearInterval(turnoTimerUI); turnoTimerUI=null; }
+        if(confirmacionTimerUI){ clearInterval(confirmacionTimerUI); confirmacionTimerUI=null; }
+      }
+      renderCierre(sala);
       return;
     }
 
     // ── Sorteo del turno si todavía no existe ──
     if(!p.turno){
-      const elegibles = Object.keys(jugadores).filter(uid=>(fichas[uid]||{}).intervencion>0);
+      // Sorteo entre TODOS los jugadores de la mesa: las fichas mostradas son solo
+      // información visible (como en el póker), ya no filtran quién puede salir sorteado.
+      const elegibles = Object.keys(jugadores);
       if(elegibles.length>0){
         const elegido = elegibles[Math.floor(Math.random()*elegibles.length)];
         runTransaction(ref(db,'salas_poker/'+codigo+'/partida/turno'), actual=>{
@@ -716,6 +787,8 @@
     if(ultimoTurnoUid !== turno.jugadorUid+'-'+turno.numero){
       ultimoTurnoUid = turno.jugadorUid+'-'+turno.numero;
       composeBloques = esMiTurno ? [{cita:null, respuesta:''}] : [];
+      modoApuesta = false;
+      apuestaForm = { pregunta:'', tipo:'intervencion', cantidad:1 };
       turnoTimeoutEjecutado = null;
       iniciarRelojTurno(sala, turno, esMiTurno, fichas);
     }
@@ -728,9 +801,15 @@
     if(turnoTimerUI) clearInterval(turnoTimerUI);
     const duracion = turno.duracionSeg || 240;
     function tick(){
+      // ── Standby: si hay una apuesta activa, el cronómetro se congela y no se disparan timeouts ──
+      const apuestaViva = salaActual && salaActual.partida && salaActual.partida.apuesta && salaActual.partida.apuesta.estado!=='cerrada';
+      const reloj = document.getElementById('turno-reloj');
+      if(apuestaViva){
+        if(reloj){ reloj.textContent='⏸'; reloj.className='turno-reloj'; }
+        return;
+      }
       const transcurrido = Math.floor((Date.now() - turno.iniciadoEn)/1000);
       const restante = duracion - transcurrido;
-      const reloj = document.getElementById('turno-reloj');
       if(reloj){
         const mm = Math.floor(Math.max(0,restante)/60), ss = Math.max(0,restante)%60;
         reloj.textContent = mm+':'+String(ss).padStart(2,'0');
@@ -756,19 +835,19 @@
   // Cuando se me acaba mi propio tiempo: publico lo que tenga escrito, o salto si no escribí nada.
   async function ejecutarTimeoutDeMiTurno(fichas){
     const hayTexto = composeBloques.some(b=>b.respuesta.trim().length>0);
-    const misFichas = fichas[window.estado.uid]||{intervencion:0,salto:0};
+    const misFichas = fichas[window.estado.uid]||{intervencion:{base:0,acumulada:0},salto:{base:0,acumulada:0}};
     if(hayTexto){
       await enviarTurno();
-    } else if(misFichas.salto>0){
+    } else if(totalFicha(misFichas,'salto')>0){
       await saltarTurno();
     } else {
-      // No escribió nada y ya no tiene fichas de salto: pierde el turno igual, consumiendo 1 ficha de intervención.
+      // No escribió nada y ya no tiene fichas de salto: pierde el turno igual, consumiendo 1 ficha base de intervención.
       const codigo = window.estado.salaId;
       const sala = salaActual, p = sala.partida, turno = p.turno;
       mostrarLoading(true);
       const msgRef = ref(db,'salas_poker/'+codigo+'/partida/mensajes/m'+Date.now());
       await set(msgRef, { sistema:true, texto: window.estado.nombre+' perdió su turno por tiempo (sin fichas de salto).', timestamp: Date.now() });
-      await update(ref(db,'salas_poker/'+codigo+'/partida/fichas/'+window.estado.uid), { intervencion: Math.max(0,misFichas.intervencion-1) });
+      await update(ref(db,'salas_poker/'+codigo+'/partida/fichas/'+window.estado.uid+'/intervencion'), { base: Math.max(0,misFichas.intervencion.base-1) });
       await pasarTurno(codigo, sala, turno);
       mostrarLoading(false);
     }
@@ -790,8 +869,8 @@
     await set(msgRef, { sistema:true, texto: nombreAusente+' no respondió a tiempo (desconexión) y perdió el turno.', timestamp: Date.now() });
     const snapFichas = await get(ref(db,'salas_poker/'+codigo+'/partida/fichas'));
     const fichas = snapFichas.val()||{};
-    const f = fichas[uidAusente]||{intervencion:0,salto:0};
-    await update(ref(db,'salas_poker/'+codigo+'/partida/fichas/'+uidAusente), { intervencion: Math.max(0,f.intervencion-1) });
+    const f = fichas[uidAusente]||{intervencion:{base:0,acumulada:0},salto:{base:0,acumulada:0}};
+    await update(ref(db,'salas_poker/'+codigo+'/partida/fichas/'+uidAusente+'/intervencion'), { base: Math.max(0,f.intervencion.base-1) });
     await pasarTurno(codigo, sala, turnoVencido);
   }
 
@@ -852,16 +931,259 @@
     };
   }
 
+  function renderStandbyApuesta(wrap, apuesta, jugadores, misFichas){
+    const uid = window.estado.uid;
+    const respuestas = apuesta.respuestas || {};
+    if(apuesta.estado === 'resolviendo'){
+      const entrantes = Object.keys(respuestas).filter(u=>respuestas[u]==='entra').concat(apuesta.abiertaPor);
+      const soyModerador = uid === (salaActual.partida||{}).moderadorUid;
+      if(soyModerador){
+        renderModeradorResuelveApuesta(wrap, apuesta, jugadores, entrantes);
+        return;
+      }
+      const nombres = entrantes.map(u=>(jugadores[u]||{}).nombre||'—').join(', ');
+      wrap.innerHTML = '<div class="compose-espera">⏸ En pausa — resolviendo la apuesta entre: '+nombres+'. El moderador está declarando al ganador.</div>';
+      return;
+    }
+    if(apuesta.estado === 'confirmando'){
+      renderConfirmacionApuesta(wrap, apuesta, jugadores);
+      return;
+    }
+    if(apuesta.estado !== 'abierta'){
+      wrap.innerHTML = '<div class="compose-espera">⏸ Procesando el resultado de la apuesta...</div>';
+      return;
+    }
+    if(uid === apuesta.abiertaPor){
+      const nJugadores = Object.keys(jugadores).length;
+      const nRespondieron = Object.keys(respuestas).length;
+      wrap.innerHTML = '<div class="compose-espera">Abriste esta apuesta. Esperando respuestas ('+nRespondieron+'/'+(nJugadores-1)+')...</div>';
+      return;
+    }
+    if(respuestas[uid]){
+      wrap.innerHTML = '<div class="compose-espera">'+(respuestas[uid]==='entra'?'Entraste a la apuesta.':'Pasaste.')+' Esperando a los demás...</div>';
+      return;
+    }
+    const disponibles = totalFicha(misFichas, apuesta.tipoFicha);
+    const puedeEntrar = disponibles >= apuesta.cantidad;
+    wrap.innerHTML = '<div class="form-group">'
+      + '<div class="espera-nota" style="margin-bottom:14px;">'+escapeHtml(apuesta.autorNombre)+' apuesta '+apuesta.cantidad+' de '+apuesta.tipoFicha+':<br>"'+escapeHtml(apuesta.pregunta)+'"</div>'
+      + '<div class="form-footer" style="padding:0;">'
+      + '<button class="btn-primary" onclick="responderApuesta(\'entra\')" '+(puedeEntrar?'':'disabled')+'>ENTRAR (igualas '+apuesta.cantidad+' de '+apuesta.tipoFicha+')</button>'
+      + '<button class="btn-ghost" onclick="responderApuesta(\'pasa\')">PASAR</button>'
+      + (puedeEntrar?'':'<div class="carta-counter over">No te alcanzan las fichas para igualar</div>')
+      + '</div></div>';
+  }
+
+  window.responderApuesta = async function(decision){
+    const codigo = window.estado.salaId;
+    const sala = salaActual, p = sala.partida, apuesta = p.apuesta;
+    const uid = window.estado.uid;
+    if(!apuesta || apuesta.estado!=='abierta' || apuesta.respuestas[uid]) return;
+    mostrarLoading(true);
+    if(decision==='entra'){
+      const misFichas = p.fichas[uid];
+      if(totalFicha(misFichas, apuesta.tipoFicha) < apuesta.cantidad){ mostrarLoading(false); showToast('No te alcanzan las fichas'); return; }
+      await update(ref(db,'salas_poker/'+codigo+'/partida/fichas/'+uid+'/'+apuesta.tipoFicha), consumirFichas(misFichas, apuesta.tipoFicha, apuesta.cantidad));
+    }
+    await update(ref(db,'salas_poker/'+codigo+'/partida/apuesta/respuestas'), { [uid]: decision });
+
+    // ¿Ya respondieron todos los demás jugadores? Si es así, se cierra la ventana de respuestas.
+    const snap = await get(ref(db,'salas_poker/'+codigo));
+    const salaFresca = snap.val();
+    const jugadoresIds = Object.keys(salaFresca.jugadores||{});
+    const otros = jugadoresIds.filter(u=>u!==apuesta.abiertaPor);
+    const respuestasFrescas = (salaFresca.partida.apuesta||{}).respuestas || {};
+    const todosRespondieron = otros.every(u=>respuestasFrescas[u]);
+    if(todosRespondieron){
+      const entraron = otros.filter(u=>respuestasFrescas[u]==='entra');
+      const msgRef = ref(db,'salas_poker/'+codigo+'/partida/mensajes/m'+Date.now());
+      if(entraron.length===0){
+        // Nadie entró: se cancela la apuesta y el turno normal se reanuda.
+        await set(msgRef, { sistema:true, texto:'Nadie entró a la apuesta de '+apuesta.autorNombre+'. Se cancela y continúa el turno normal.', timestamp: Date.now() });
+        await update(ref(db,'salas_poker/'+codigo+'/partida'), { apuesta: null });
+        // Se reinicia el turno actual para que no arrastre el tiempo transcurrido durante la pausa.
+        await update(ref(db,'salas_poker/'+codigo+'/partida/turno'), { iniciadoEn: Date.now() });
+      } else {
+        const nombres = entraron.map(u=>(salaFresca.jugadores[u]||{}).nombre||'—').concat(apuesta.autorNombre).join(', ');
+        await set(msgRef, { sistema:true, texto:'Todos respondieron. Apuesta en pausa entre: '+nombres+'.', timestamp: Date.now() });
+        await update(ref(db,'salas_poker/'+codigo+'/partida/apuesta'), { estado:'resolviendo' });
+      }
+    }
+    mostrarLoading(false);
+  };
+
+  // ── 7. RESOLUCIÓN DE LA APUESTA (vista del moderador) ──
+  function renderModeradorResuelveApuesta(wrap, apuesta, jugadores, entrantes){
+    let html = '<div class="espera-nota" style="margin-bottom:14px;">Eres el moderador. Declara quién ganó el duelo — "'+escapeHtml(apuesta.pregunta)+'" — entre:</div>'
+      + '<div class="form-footer" style="padding:0;gap:10px;">';
+    entrantes.forEach(u=>{
+      html += '<button class="btn-primary" style="max-width:none;" onclick="declararGanadorApuesta(\''+u+'\')">'+escapeHtml((jugadores[u]||{}).nombre||'—')+' GANA</button>';
+    });
+    html += '</div>';
+    wrap.innerHTML = html;
+  }
+
+  window.declararGanadorApuesta = async function(ganadorUid){
+    const codigo = window.estado.salaId;
+    const sala = salaActual, p = sala.partida, apuesta = p.apuesta;
+    if(!apuesta || apuesta.estado!=='resolviendo') return;
+    if(window.estado.uid !== p.moderadorUid){ showToast('Solo el moderador puede resolver la apuesta'); return; }
+    const jugadores = sala.jugadores||{};
+    const respuestas = apuesta.respuestas||{};
+    const entraron = Object.keys(respuestas).filter(u=>respuestas[u]==='entra');
+    const pot = entraron.length * apuesta.cantidad;
+    const ganadorNombre = (jugadores[ganadorUid]||{}).nombre || '—';
+    mostrarLoading(true);
+    await update(ref(db,'salas_poker/'+codigo+'/partida/apuesta'), {
+      estado:'confirmando',
+      veredicto: { ganadorUid, ganadorNombre, pot, tipoFicha: apuesta.tipoFicha, creditoGanado:1, declaradoEn: Date.now() },
+      confirmaciones: {}
+    });
+    const msgRef = ref(db,'salas_poker/'+codigo+'/partida/mensajes/m'+Date.now());
+    await set(msgRef, { sistema:true, texto: 'El moderador declaró ganador de la apuesta a '+ganadorNombre+' ('+pot+' de '+apuesta.tipoFicha+' en juego). Esperando que toda la mesa confirme.', timestamp: Date.now() });
+    mostrarLoading(false);
+  };
+
+  // ── 8. CONFIRMACIÓN UNÁNIME CON TIMEOUT (1 minuto, expulsión automática) ──
+  let confirmacionTimerUI = null;
+  let confirmacionRondaProcesada = null; // evita reprocesar la misma ronda de confirmación
+
+  function renderConfirmacionApuesta(wrap, apuesta, jugadores){
+    const uid = window.estado.uid;
+    const v = apuesta.veredicto;
+    const conf = apuesta.confirmaciones || {};
+    const total = Object.keys(jugadores).length;
+    const nConf = Object.keys(conf).filter(u=>conf[u]).length;
+    let html = '<div class="espera-nota" style="margin-bottom:14px;">El moderador declaró ganador a <b style="color:var(--verde)">'+escapeHtml(v.ganadorNombre)+'</b>: +'+v.pot+' de '+v.tipoFicha+' y +'+v.creditoGanado+' crédito.</div>';
+    if(conf[uid]){
+      html += '<div class="compose-espera">Confirmaste. Esperando a los demás ('+nConf+'/'+total+')...</div>';
+    } else {
+      html += '<div class="form-footer" style="padding:0;"><button class="btn-primary" onclick="confirmarVeredicto()">ACEPTAR RESULTADO</button></div>';
+    }
+    html += '<div class="espera-config" id="confirmacion-reloj" style="margin-top:14px;"></div>';
+    wrap.innerHTML = html;
+    iniciarRelojConfirmacion(v.declaradoEn);
+  }
+
+  function iniciarRelojConfirmacion(declaradoEn){
+    if(confirmacionTimerUI) clearInterval(confirmacionTimerUI);
+    function tick(){
+      const el = document.getElementById('confirmacion-reloj');
+      // Si ya cambiamos de pantalla o de apuesta, dejar de tiquetear.
+      if(!el){ clearInterval(confirmacionTimerUI); return; }
+      const transcurrido = Math.floor((Date.now()-declaradoEn)/1000);
+      const restante = Math.max(0, 60-transcurrido);
+      el.textContent = restante>0 ? 'Quien no confirme en '+restante+'s quedará fuera de la mesa' : 'Procesando confirmaciones...';
+      if(restante<=0 && confirmacionRondaProcesada!==declaradoEn){
+        confirmacionRondaProcesada = declaradoEn;
+        clearInterval(confirmacionTimerUI);
+        procesarExpulsionesConfirmacion(declaradoEn);
+      }
+    }
+    tick();
+    confirmacionTimerUI = setInterval(tick, 1000);
+  }
+
+  window.confirmarVeredicto = async function(){
+    const codigo = window.estado.salaId;
+    const uid = window.estado.uid;
+    mostrarLoading(true);
+    await update(ref(db,'salas_poker/'+codigo+'/partida/apuesta/confirmaciones'), { [uid]: true });
+    await intentarCerrarApuesta(codigo);
+    mostrarLoading(false);
+  };
+
+  // Si el plazo de 1 minuto venció, cualquier dispositivo puede detectarlo y expulsar
+  // a quienes no confirmaron — protegido para que solo un cliente ejecute la expulsión.
+  async function procesarExpulsionesConfirmacion(declaradoEnEsperado){
+    const codigo = window.estado.salaId;
+    const guardia = await runTransaction(ref(db,'salas_poker/'+codigo+'/partida/apuesta/procesandoExpulsion'), actual=>{
+      if(actual === declaradoEnEsperado) return; // ya se está procesando esta ronda
+      return declaradoEnEsperado;
+    });
+    if(!guardia.committed) return;
+    const snap = await get(ref(db,'salas_poker/'+codigo));
+    const sala = snap.val();
+    const p = sala && sala.partida, apuesta = p && p.apuesta;
+    if(!apuesta || apuesta.estado!=='confirmando' || !apuesta.veredicto || apuesta.veredicto.declaradoEn!==declaradoEnEsperado) return;
+    const jugadores = sala.jugadores||{};
+    const conf = apuesta.confirmaciones||{};
+    const noConfirmaron = Object.keys(jugadores).filter(u=>!conf[u]);
+    if(noConfirmaron.length>0){
+      const nombres = noConfirmaron.map(u=>(jugadores[u]||{}).nombre||'—').join(', ');
+      for(const u of noConfirmaron){
+        await set(ref(db,'salas_poker/'+codigo+'/jugadores/'+u), null);
+      }
+      const msgRef = ref(db,'salas_poker/'+codigo+'/partida/mensajes/m'+Date.now());
+      await set(msgRef, { sistema:true, texto: 'Expulsados de la mesa por no confirmar el resultado a tiempo: '+nombres+'.', timestamp: Date.now() });
+      // Si alguno de los expulsados tenía el turno abierto, hay que pasarlo para no dejar la mesa colgada.
+      const snap2 = await get(ref(db,'salas_poker/'+codigo));
+      const sala2 = snap2.val();
+      if(sala2.partida && sala2.partida.turno && noConfirmaron.includes(sala2.partida.turno.jugadorUid)){
+        await pasarTurno(codigo, sala2, sala2.partida.turno);
+      }
+    }
+    await intentarCerrarApuesta(codigo);
+  }
+
+  // Cuando todos los jugadores que quedan en la mesa confirmaron, se reparte el pozo.
+  async function intentarCerrarApuesta(codigo){
+    const snap = await get(ref(db,'salas_poker/'+codigo));
+    const sala = snap.val();
+    const p = sala && sala.partida, apuesta = p && p.apuesta;
+    if(!apuesta || apuesta.estado!=='confirmando') return;
+    const jugadores = sala.jugadores||{};
+    const conf = apuesta.confirmaciones||{};
+    const todos = Object.keys(jugadores).every(u=>conf[u]);
+    if(todos) await aplicarVeredictoApuesta(codigo, sala);
+  }
+
+  // Transacción de un solo disparo: reparte fichas + crédito al ganador y cierra la apuesta.
+  async function aplicarVeredictoApuesta(codigo, sala){
+    const resultado = await runTransaction(ref(db,'salas_poker/'+codigo+'/partida/apuesta'), actual=>{
+      if(!actual || actual.estado!=='confirmando') return; // ya se aplicó o cambió por otro cliente
+      actual.estado = 'aplicando';
+      return actual;
+    });
+    if(!resultado.committed || !resultado.snapshot.exists()) return;
+    const apuesta = resultado.snapshot.val();
+    if(apuesta.estado !== 'aplicando') return; // otro cliente ya se quedó con esta ronda
+    const v = apuesta.veredicto;
+    const p = sala.partida;
+    const fichasGanador = (p.fichas && p.fichas[v.ganadorUid]) || {intervencion:{base:0,acumulada:0},salto:{base:0,acumulada:0},creditos:0};
+    const actualTipo = fichasGanador[v.tipoFicha] || {base:0,acumulada:0};
+    await update(ref(db,'salas_poker/'+codigo+'/partida/fichas/'+v.ganadorUid+'/'+v.tipoFicha), { base:actualTipo.base||0, acumulada:(actualTipo.acumulada||0)+v.pot });
+    await update(ref(db,'salas_poker/'+codigo+'/partida/fichas/'+v.ganadorUid), { creditos:(fichasGanador.creditos||0)+v.creditoGanado });
+    const msgRef = ref(db,'salas_poker/'+codigo+'/partida/mensajes/m'+Date.now());
+    await set(msgRef, { sistema:true, texto: v.ganadorNombre+' se llevó la apuesta: +'+v.pot+' de '+v.tipoFicha+' y +'+v.creditoGanado+' crédito.', timestamp: Date.now() });
+    await update(ref(db,'salas_poker/'+codigo+'/partida'), { apuesta: null });
+    await update(ref(db,'salas_poker/'+codigo+'/partida/turno'), { iniciadoEn: Date.now() });
+  }
+
   // ── COMPOSE (escribir la intervención, con bloques de cita+respuesta) ──
   function renderCompose(sala, p, jugadores, fichas, turno, esMiTurno){
     const wrap = document.getElementById('compose-wrap');
+    const misFichasBase = fichas[window.estado.uid]||{intervencion:{base:0,acumulada:0},salto:{base:0,acumulada:0}};
+
+    // ── Standby: mientras la apuesta esté viva, reemplaza TODO el panel de turno normal ──
+    if(p.apuesta && p.apuesta.estado!=='cerrada'){
+      renderStandbyApuesta(wrap, p.apuesta, jugadores, misFichasBase);
+      return;
+    }
+
     if(!esMiTurno){
-      const misFichas = fichas[window.estado.uid]||{intervencion:0,salto:0};
-      wrap.innerHTML = '<div class="compose-espera">Esperando la intervención de otro jugador. Tus fichas: '+misFichas.intervencion+' intervención, '+misFichas.salto+' salto.</div>';
+      wrap.innerHTML = '<div class="compose-espera">Esperando la intervención de otro jugador. Tus fichas: '+totalFicha(misFichasBase,'intervencion')+' intervención, '+totalFicha(misFichasBase,'salto')+' salto.</div>';
       return;
     }
     const nivel = sala.nivelIntervencion || {caracteres:650};
-    const misFichas = fichas[window.estado.uid]||{intervencion:0,salto:0};
+    const misFichas = fichas[window.estado.uid]||{intervencion:{base:0,acumulada:0},salto:{base:0,acumulada:0}};
+    const apuestaAbierta = p.apuesta && p.apuesta.estado==='abierta';
+
+    if(modoApuesta){
+      renderFormApuesta(wrap, misFichas);
+      return;
+    }
+
     const totalTexto = composeBloques.reduce((a,b)=>a+b.respuesta.length,0);
 
     let html = composeBloques.map((b,i)=>{
@@ -876,8 +1198,10 @@
 
     const cls = totalTexto>nivel.caracteres ? 'over' : (totalTexto>nivel.caracteres*0.85 ? 'warn' : '');
     html += '<div class="compose-counter '+cls+'" id="compose-counter">'+totalTexto+' / '+nivel.caracteres+' caracteres</div>';
+    const sinFichasParaApostar = totalFicha(misFichas,'intervencion')<=0 && totalFicha(misFichas,'salto')<=0;
     html += '<div class="compose-botones">'
-      + '<button class="btn-ghost" id="btn-saltar" onclick="saltarTurno()" '+(misFichas.salto<=0?'style="display:none;"':'')+'>SALTAR ('+misFichas.salto+')</button>'
+      + '<button class="btn-ghost" id="btn-saltar" onclick="saltarTurno()" '+(totalFicha(misFichas,'salto')<=0?'style="display:none;"':'')+'>SALTAR ('+totalFicha(misFichas,'salto')+')</button>'
+      + '<button class="btn-ghost" id="btn-apostar" onclick="abrirFormApuesta()" '+(apuestaAbierta||sinFichasParaApostar?'disabled':'')+'>AÑADIR APUESTA</button>'
       + '<button class="btn-primary" id="btn-jugar" onclick="enviarTurno()">JUGAR</button>'
       + '</div>';
     wrap.innerHTML = html;
@@ -885,6 +1209,76 @@
     const puedeEnviar = totalTexto>0 && totalTexto<=nivel.caracteres;
     document.getElementById('btn-jugar').disabled = !puedeEnviar;
   }
+
+  window.abrirFormApuesta = function(){
+    modoApuesta = true;
+    apuestaForm = { pregunta:'', tipo: (totalFicha(salaActual.partida.fichas[window.estado.uid],'intervencion')>0?'intervencion':'salto'), cantidad:1 };
+    renderArena(salaActual);
+  };
+  window.cancelarApuesta = function(){
+    modoApuesta = false;
+    renderArena(salaActual);
+  };
+  window.actualizarApuestaPregunta = function(el){
+    apuestaForm.pregunta = el.value;
+    const counter = document.getElementById('apuesta-counter');
+    if(counter) counter.textContent = el.value.length+' / 300 caracteres';
+  };
+  window.seleccionarApuestaTipo = function(el, tipo){
+    apuestaForm.tipo = tipo;
+    apuestaForm.cantidad = 1; // al cambiar de tipo, reinicia la cantidad para no exceder lo disponible
+    renderArena(salaActual);
+  };
+  window.seleccionarApuestaCantidad = function(el, cantidad){
+    apuestaForm.cantidad = cantidad;
+    document.querySelectorAll('#apuesta-sel-cantidad .chip-opt').forEach(o=>o.classList.remove('sel'));
+    el.classList.add('sel');
+  };
+
+  function renderFormApuesta(wrap, misFichas){
+    const maxTipo = Math.min(2, totalFicha(misFichas, apuestaForm.tipo));
+    let html = '<div class="form-group">'
+      + '<label class="form-label">Pregunta del duelo (ligada al tema)</label>'
+      + '<textarea class="carta-textarea" style="min-height:70px;" placeholder="¿Qué le vas a exigir responder?" oninput="actualizarApuestaPregunta(this)">'+escapeHtml(apuestaForm.pregunta)+'</textarea>'
+      + '<div class="carta-counter" id="apuesta-counter">'+apuestaForm.pregunta.length+' / 300 caracteres</div>'
+      + '</div>'
+      + '<div class="form-group"><label class="form-label">Tipo de ficha a apostar</label><div class="chip-select">'
+      + '<div class="chip-opt'+(apuestaForm.tipo==='intervencion'?' sel':'')+'" onclick="seleccionarApuestaTipo(this,\'intervencion\')" '+(totalFicha(misFichas,'intervencion')<=0?'style="opacity:.4;pointer-events:none;"':'')+'>Intervención</div>'
+      + '<div class="chip-opt'+(apuestaForm.tipo==='salto'?' sel':'')+'" onclick="seleccionarApuestaTipo(this,\'salto\')" '+(totalFicha(misFichas,'salto')<=0?'style="opacity:.4;pointer-events:none;"':'')+'>Salto</div>'
+      + '</div></div>'
+      + '<div class="form-group"><label class="form-label">Cuántas fichas apuestas (máx. 2)</label><div class="chip-select" id="apuesta-sel-cantidad">'
+      + '<div class="chip-opt'+(apuestaForm.cantidad===1?' sel':'')+'" onclick="seleccionarApuestaCantidad(this,1)">1</div>'
+      + '<div class="chip-opt'+(apuestaForm.cantidad===2?' sel':'')+'" onclick="seleccionarApuestaCantidad(this,2)" '+(maxTipo<2?'style="opacity:.4;pointer-events:none;"':'')+'>2</div>'
+      + '</div></div>'
+      + '<div class="form-footer" style="padding:8px 0 0;">'
+      + '<button class="btn-primary" onclick="abrirApuesta()">ABRIR APUESTA</button>'
+      + '<button class="btn-ghost" onclick="cancelarApuesta()">CANCELAR</button>'
+      + '</div>';
+    wrap.innerHTML = html;
+  }
+
+  window.abrirApuesta = async function(){
+    const pregunta = apuestaForm.pregunta.trim();
+    if(!pregunta){ showToast('Escribe la pregunta del duelo'); return; }
+    if(pregunta.length>300){ showToast('La pregunta es muy larga'); return; }
+    const codigo = window.estado.salaId;
+    const sala = salaActual, p = sala.partida;
+    const misFichas = p.fichas[window.estado.uid];
+    const disponibles = totalFicha(misFichas, apuestaForm.tipo);
+    if(apuestaForm.cantidad<1 || apuestaForm.cantidad>2 || apuestaForm.cantidad>disponibles){
+      showToast('No tienes suficientes fichas de ese tipo'); return;
+    }
+    mostrarLoading(true);
+    await update(ref(db,'salas_poker/'+codigo+'/partida'), { apuesta: {
+      abiertaPor: window.estado.uid, autorNombre: window.estado.nombre,
+      tipoFicha: apuestaForm.tipo, cantidad: apuestaForm.cantidad, pregunta,
+      estado:'abierta', creadoEn: Date.now(), pausadoDesde: Date.now(), respuestas:{}
+    }});
+    const msgRef = ref(db,'salas_poker/'+codigo+'/partida/mensajes/m'+Date.now());
+    await set(msgRef, { sistema:true, texto: window.estado.nombre+' abrió una apuesta ('+apuestaForm.cantidad+' de '+apuestaForm.tipo+'): "'+pregunta+'"', timestamp: Date.now() });
+    modoApuesta = false;
+    mostrarLoading(false);
+  };
 
   // Se ejecuta en cada letra que escribes. A propósito NO reconstruye el HTML del cuadro de texto
   // (eso era lo que causaba que el cursor saltara al inicio y el texto se viera "al revés").
@@ -922,7 +1316,7 @@
       autorUid: window.estado.uid, autorNombre: window.estado.nombre,
       bloques, tiempoMs, caracteres, timestamp: Date.now()
     });
-    await update(ref(db,'salas_poker/'+codigo+'/partida/fichas/'+window.estado.uid), { intervencion: Math.max(0,(p.fichas[window.estado.uid].intervencion-1)) });
+    await update(ref(db,'salas_poker/'+codigo+'/partida/fichas/'+window.estado.uid+'/intervencion'), consumirFicha(p.fichas[window.estado.uid],'intervencion'));
     await pasarTurno(codigo, sala, turno);
     composeBloques=[];
     mostrarLoading(false);
@@ -932,9 +1326,9 @@
     const codigo = window.estado.salaId;
     const sala = salaActual, p = sala.partida, turno = p.turno;
     const misFichas = p.fichas[window.estado.uid];
-    if(!misFichas || misFichas.salto<=0) return;
+    if(!misFichas || totalFicha(misFichas,'salto')<=0) return;
     mostrarLoading(true);
-    await update(ref(db,'salas_poker/'+codigo+'/partida/fichas/'+window.estado.uid), { salto: misFichas.salto-1 });
+    await update(ref(db,'salas_poker/'+codigo+'/partida/fichas/'+window.estado.uid+'/salto'), consumirFicha(misFichas,'salto'));
     const msgRef = ref(db,'salas_poker/'+codigo+'/partida/mensajes/m'+Date.now());
     await set(msgRef, { sistema:true, texto: window.estado.nombre+' saltó su turno.', timestamp: Date.now() });
     await pasarTurno(codigo, sala, turno);
@@ -943,14 +1337,89 @@
 
   async function pasarTurno(codigo, sala, turnoAnterior){
     const jugadores = sala.jugadores||{};
-    // fichas actualizadas localmente no están garantizadas frescas; releemos antes de elegir al siguiente
-    const snap = await get(ref(db,'salas_poker/'+codigo+'/partida/fichas'));
-    const fichas = snap.val()||{};
-    const elegibles = Object.keys(jugadores).filter(uid=>(fichas[uid]||{}).intervencion>0);
-    if(elegibles.length===0) return; // fin de partida, se detecta en el próximo render
+    // Sorteo entre TODOS los jugadores de la mesa: las fichas ya no filtran elegibilidad,
+    // solo se muestran como información visible (el conteo real se lleva fuera de la app).
+    const elegibles = Object.keys(jugadores);
+    if(elegibles.length===0) return; // no debería pasar con la mesa ya iniciada
     const siguiente = elegibles[Math.floor(Math.random()*elegibles.length)];
     await update(ref(db,'salas_poker/'+codigo+'/partida'), { turno: { jugadorUid:siguiente, iniciadoEn:Date.now(), numero:(turnoAnterior.numero||0)+1, duracionSeg:(sala.nivelIntervencion||{}).tiempoSeg||240 } });
   }
+
+  // ── 9. CIERRE DE PARTIDA: tabla final + veredicto de la IA jueza ──
+  function renderCierre(sala){
+    const p = sala.partida;
+    const jugadores = sala.jugadores||{};
+    const fichas = p.fichas||{};
+
+    const filas = Object.entries(jugadores).map(([uid,j])=>{
+      const f = fichas[uid]||{intervencion:{base:0,acumulada:0},salto:{base:0,acumulada:0},creditos:0};
+      return { uid, nombre:j.nombre, intervencion:totalFicha(f,'intervencion'), salto:totalFicha(f,'salto'), creditos:f.creditos||0 };
+    }).sort((a,b)=> (b.creditos-a.creditos) || ((b.intervencion+b.salto)-(a.intervencion+a.salto)) );
+
+    document.getElementById('cierre-tabla').innerHTML = filas.map(r=>
+      '<div class="jugador-row">'
+      + '<div class="jugador-nombre">'+escapeHtml(r.nombre)+(r.uid===window.estado.uid?' (tú)':'')+'</div>'
+      + '<div class="jugador-tag">'+r.creditos+' créd</div>'
+      + '<div class="jugador-listo si">'+r.intervencion+' interv · '+r.salto+' salto</div>'
+      + '</div>'
+    ).join('');
+
+    const totalIntervencion = Object.values(fichas).reduce((a,f)=>a+totalFicha(f,'intervencion'),0);
+    document.getElementById('cierre-motivo').textContent = totalIntervencion===0
+      ? 'La mesa se quedó sin fichas de intervención (Sequía).'
+      : 'Solo queda un jugador con fichas para intervenir (Monólogo imposible).';
+
+    const soyModerador = window.estado.uid === p.moderadorUid;
+    const cierre = p.cierre;
+    const modPanel = document.getElementById('cierre-mod-panel');
+    const finalPanel = document.getElementById('cierre-veredicto-final');
+
+    if(cierre){
+      modPanel.style.display='none';
+      finalPanel.style.display='block';
+      finalPanel.innerHTML = '<div class="gracia-carta">'
+        + '<div class="gracia-autor">Veredicto de la IA jueza</div>'
+        + '<div class="gracia-titulo">Ganador de la mesa: '+escapeHtml(cierre.ganadorNombre)+'</div>'
+        + '<div class="gracia-arg">'+escapeHtml(cierre.veredictoTexto||'—')+'</div>'
+        + '</div>';
+      return;
+    }
+    finalPanel.style.display='none';
+    modPanel.style.display='block';
+    if(!soyModerador){
+      modPanel.innerHTML = '<div class="espera-nota">Esperando a que el moderador declare el veredicto final de la mesa.</div>';
+      return;
+    }
+    // Solo reconstruir el formulario si todavía no está armado (para no perder lo que el moderador va escribiendo).
+    if(!document.getElementById('cierre-select-ganador')){
+      modPanel.innerHTML = '<div class="form-group"><label class="form-label">Ganador general (según la IA jueza)</label>'
+        + '<div class="chip-select" id="cierre-select-ganador">'
+        + filas.map(r=>'<div class="chip-opt" data-v="'+r.uid+'" onclick="seleccionarCierreGanador(this)">'+escapeHtml(r.nombre)+'</div>').join('')
+        + '</div></div>'
+        + '<div class="form-group"><label class="form-label">Veredicto de la IA jueza</label>'
+        + '<textarea class="carta-textarea" id="cierre-veredicto-texto" placeholder="Pega aquí el razonamiento que dio la IA jueza..."></textarea></div>'
+        + '<div class="form-footer" style="padding:8px 0 0;"><button class="btn-primary" onclick="declararCierre()">DECLARAR GANADOR DE LA MESA</button></div>';
+    }
+  }
+
+  window.seleccionarCierreGanador = function(el){
+    document.querySelectorAll('#cierre-select-ganador .chip-opt').forEach(o=>o.classList.remove('sel'));
+    el.classList.add('sel');
+  };
+
+  window.declararCierre = async function(){
+    const sel = document.querySelector('#cierre-select-ganador .chip-opt.sel');
+    if(!sel){ showToast('Elige quién ganó la mesa'); return; }
+    const veredictoTexto = document.getElementById('cierre-veredicto-texto').value.trim();
+    if(!veredictoTexto){ showToast('Pega el veredicto de la IA jueza'); return; }
+    const ganadorUid = sel.dataset.v;
+    const ganadorNombre = ((salaActual.jugadores||{})[ganadorUid]||{}).nombre||'—';
+    mostrarLoading(true);
+    await update(ref(db,'salas_poker/'+window.estado.salaId+'/partida'), {
+      cierre: { ganadorUid, ganadorNombre, veredictoTexto, declaradoPor:window.estado.uid, timestamp:Date.now() }
+    });
+    mostrarLoading(false);
+  };
 
   // ── APUNTES FLOTANTES (personales, guardados solo en este dispositivo) ──
   window.abrirNotas = function(){
